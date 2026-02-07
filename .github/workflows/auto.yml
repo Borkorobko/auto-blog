@@ -1,0 +1,28 @@
+name: Auto Blog
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Create article
+        run: |
+          mkdir -p posts
+          echo "<h1>Automated Article</h1><p>This site prints money eventually.</p>" > posts/test.html
+
+      - name: Commit
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "auto post" || echo "nothing"
+          git push
