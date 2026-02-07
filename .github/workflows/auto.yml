@@ -11,6 +11,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
 
@@ -19,7 +20,7 @@ jobs:
           KEYWORD=$(shuf -n 1 keywords.txt)
           echo "KEYWORD=$KEYWORD" >> $GITHUB_ENV
 
-            - name: Create article
+      - name: Create article
         run: |
           mkdir -p posts
           FILE="posts/${KEYWORD// /-}.html"
@@ -27,20 +28,17 @@ jobs:
           echo "<html><body>" > $FILE
           echo "<h1>$KEYWORD</h1>" >> $FILE
 
-          echo "<p>This article explains $KEYWORD and how it helps football players improve performance and fitness.</p>" >> $FILE
+          echo "<p>This article explains $KEYWORD and how football players can improve fitness and performance.</p>" >> $FILE
 
-          echo "<h2>Why it matters</h2>" >> $FILE
-          echo "<p>Training correctly improves speed, endurance and strength on the pitch.</p>" >> $FILE
-
-          echo "<h2>Basic tips</h2>" >> $FILE
+          echo "<h2>Training tips</h2>" >> $FILE
           echo "<ul>" >> $FILE
           echo "<li>Train consistently</li>" >> $FILE
           echo "<li>Focus on speed and endurance</li>" >> $FILE
-          echo "<li>Use proper equipment</li>" >> $FILE
+          echo "<li>Use proper gear</li>" >> $FILE
           echo "</ul>" >> $FILE
 
           echo "<h2>Recommended gear</h2>" >> $FILE
-          echo "<p><a href='https://amzn.to/'>Check football training gear</a></p>" >> $FILE
+          echo "<p><a href='https://amzn.to/'>View football training gear</a></p>" >> $FILE
 
           echo "</body></html>" >> $FILE
 
@@ -49,6 +47,5 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
-          git commit -m "auto article" || echo "nothing"
+          git commit -m "auto article" || echo "nothing to commit"
           git push
-
