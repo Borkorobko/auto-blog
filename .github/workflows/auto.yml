@@ -19,18 +19,28 @@ jobs:
           KEYWORD=$(shuf -n 1 keywords.txt)
           echo "KEYWORD=$KEYWORD" >> $GITHUB_ENV
 
-      - name: Create article
+            - name: Create article
         run: |
           mkdir -p posts
           FILE="posts/${KEYWORD// /-}.html"
 
           echo "<html><body>" > $FILE
           echo "<h1>$KEYWORD</h1>" >> $FILE
-          echo "<p>This is an automated article about $KEYWORD.</p>" >> $FILE
-          echo "<p>Training consistently improves performance.</p>" >> $FILE
+
+          echo "<p>This article explains $KEYWORD and how it helps football players improve performance and fitness.</p>" >> $FILE
+
+          echo "<h2>Why it matters</h2>" >> $FILE
+          echo "<p>Training correctly improves speed, endurance and strength on the pitch.</p>" >> $FILE
+
+          echo "<h2>Basic tips</h2>" >> $FILE
+          echo "<ul>" >> $FILE
+          echo "<li>Train consistently</li>" >> $FILE
+          echo "<li>Focus on speed and endurance</li>" >> $FILE
+          echo "<li>Use proper equipment</li>" >> $FILE
+          echo "</ul>" >> $FILE
 
           echo "<h2>Recommended gear</h2>" >> $FILE
-          echo "<p><a href='https://amzn.to/'>Check equipment here</a></p>" >> $FILE
+          echo "<p><a href='https://amzn.to/'>Check football training gear</a></p>" >> $FILE
 
           echo "</body></html>" >> $FILE
 
