@@ -1,4 +1,4 @@
-name: Auto Blog
+name: Auto Fitness Football Site
 
 on:
   workflow_dispatch:
@@ -14,15 +14,31 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Pick keyword
+        run: |
+          KEYWORD=$(shuf -n 1 keywords.txt)
+          echo "KEYWORD=$KEYWORD" >> $GITHUB_ENV
+
       - name: Create article
         run: |
           mkdir -p posts
-          echo "<h1>Automated Article</h1><p>This site prints money eventually.</p>" > posts/test.html
+          FILE="posts/${KEYWORD// /-}.html"
 
-      - name: Commit
+          echo "<html><body>" > $FILE
+          echo "<h1>$KEYWORD</h1>" >> $FILE
+          echo "<p>This is an automated article about $KEYWORD.</p>" >> $FILE
+          echo "<p>Training consistently improves performance.</p>" >> $FILE
+
+          echo "<h2>Recommended gear</h2>" >> $FILE
+          echo "<p><a href='https://amzn.to/'>Check equipment here</a></p>" >> $FILE
+
+          echo "</body></html>" >> $FILE
+
+      - name: Commit and push
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
-          git commit -m "auto post" || echo "nothing"
+          git commit -m "auto article" || echo "nothing"
           git push
+
