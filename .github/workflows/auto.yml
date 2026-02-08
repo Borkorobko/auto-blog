@@ -1,25 +1,3 @@
-name: Auto Fitness Football Site
-
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 */3 * * *"
-
-permissions:
-  contents: write
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Pick keyword
-        run: |
-          KEYWORD=$(shuf -n 1 keywords.txt)
-          echo "KEYWORD=$KEYWORD" >> $GITHUB_ENV
-
       - name: Create article
         run: |
           mkdir -p posts
@@ -28,24 +6,26 @@ jobs:
           echo "<html><body>" > $FILE
           echo "<h1>$KEYWORD</h1>" >> $FILE
 
-          echo "<p>This article explains $KEYWORD and how football players can improve fitness and performance.</p>" >> $FILE
+          echo "<p>$KEYWORD is important for football players who want to improve performance, fitness and strength on the pitch.</p>" >> $FILE
+
+          echo "<h2>Why this matters</h2>" >> $FILE
+          echo "<p>Consistent training improves endurance, speed and injury resistance. Players who train correctly perform better in matches.</p>" >> $FILE
 
           echo "<h2>Training tips</h2>" >> $FILE
           echo "<ul>" >> $FILE
-          echo "<li>Train consistently</li>" >> $FILE
-          echo "<li>Focus on speed and endurance</li>" >> $FILE
-          echo "<li>Use proper gear</li>" >> $FILE
+          echo "<li>Train 3–5 times per week</li>" >> $FILE
+          echo "<li>Focus on speed and agility</li>" >> $FILE
+          echo "<li>Build strength gradually</li>" >> $FILE
+          echo "<li>Recover properly</li>" >> $FILE
           echo "</ul>" >> $FILE
 
+          echo "<h2>Simple workout example</h2>" >> $FILE
+          echo "<p>Warm up, sprint drills, strength exercises and stretching form a solid routine for football players.</p>" >> $FILE
+
           echo "<h2>Recommended gear</h2>" >> $FILE
-          echo "<p><a href='https://amzn.to/'>View football training gear</a></p>" >> $FILE
+          echo "<p><a href='https://amzn.to/'>View football training equipment</a></p>" >> $FILE
+
+          echo "<h2>Conclusion</h2>" >> $FILE
+          echo "<p>Improving $KEYWORD consistently leads to better match performance over time.</p>" >> $FILE
 
           echo "</body></html>" >> $FILE
-
-      - name: Commit and push
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add .
-          git commit -m "auto article" || echo "nothing to commit"
-          git push
