@@ -15,13 +15,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create article and site files
+      - name: Create article and update site
         run: |
           set -e
           mkdir -p posts
 
           KEYWORD=$(shuf -n 1 keywords.txt)
-          SLUG=$(echo "$KEYWORD" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+          SLUG=$(echo "$KEYWORD" | tr '[:upper:]' '[:lower:]' | tr -cs 'a-z0-9' '-')
+          SLUG=$(echo "$SLUG" | sed 's/^-//; s/-$//')
           FILE="posts/$SLUG.html"
 
           if [ ! -f "$FILE" ]; then
@@ -32,26 +33,51 @@ jobs:
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>$KEYWORD | Football Fitness Training</title>
-            <meta name="description" content="Training tips and football fitness information about $KEYWORD.">
+            <meta name="description" content="A practical guide to $KEYWORD, with football training advice, buying considerations and common mistakes.">
           </head>
           <body>
             <header>
-              <p><a href="../index.html">← Football Fitness Training</a></p>
+              <p><a href="../index.html">← Football Fitness Training</a> · <a href="index.html">All articles</a></p>
             </header>
+
             <main>
               <article>
                 <h1>$KEYWORD</h1>
-                <p>$KEYWORD can help football players improve fitness, movement, and match performance.</p>
 
-                <h2>Training tips</h2>
+                <p>This guide explains the main things football players should consider when researching <strong>$KEYWORD</strong>. Use it as a starting point, then adapt the advice to your position, playing surface, budget and training level.</p>
+
+                <h2>Who this is for</h2>
+                <p>This topic is useful for players who want to improve match performance, train more comfortably, or choose equipment that fits their needs. Beginners should prioritize comfort and durability; experienced players can focus more on specific performance features.</p>
+
+                <h2>What matters most</h2>
                 <ul>
-                  <li>Train consistently and increase intensity gradually.</li>
-                  <li>Focus on technique before adding speed or weight.</li>
-                  <li>Include rest days so your body can recover.</li>
+                  <li><strong>Fit and comfort:</strong> Equipment or training plans should feel stable and not cause pain, rubbing or unnecessary fatigue.</li>
+                  <li><strong>Playing conditions:</strong> Consider your pitch surface, weather, training frequency and position.</li>
+                  <li><strong>Progression:</strong> Increase training volume gradually instead of trying to improve everything in one week.</li>
+                  <li><strong>Recovery:</strong> Sleep, food, hydration and rest days matter as much as the session itself.</li>
                 </ul>
 
-                <h2>Useful football gear</h2>
-                <p><a href="https://amzn.to/">Browse football training gear</a></p>
+                <h2>A simple way to use this advice</h2>
+                <ol>
+                  <li>Choose one goal for the next four weeks: speed, stamina, strength, recovery or better equipment.</li>
+                  <li>Keep two or three sessions per week focused on that goal.</li>
+                  <li>Track how you feel after sessions and reduce volume if pain or unusual fatigue appears.</li>
+                  <li>Review your progress after four weeks and adjust one variable at a time.</li>
+                </ol>
+
+                <h2>Common mistakes</h2>
+                <ul>
+                  <li>Buying based only on a professional player's name or a flashy design.</li>
+                  <li>Changing boots, supplements or training plans too often to judge results.</li>
+                  <li>Ignoring fit, recovery and basic technique.</li>
+                  <li>Training hard every day without a realistic recovery plan.</li>
+                </ul>
+
+                <h2>Useful next steps</h2>
+                <p>For more football training topics, browse the <a href="index.html">full article list</a>. If you are considering equipment, compare several options, read independent reviews and check the seller's return policy before buying.</p>
+
+                <h2>Disclosure</h2>
+                <p>This site may earn a commission from qualifying purchases through some links. Recommendations should always be checked against your own needs and budget.</p>
               </article>
             </main>
           </body>
@@ -65,8 +91,7 @@ jobs:
             echo '<meta name="viewport" content="width=device-width, initial-scale=1">'
             echo '<title>Football Training Articles</title></head><body>'
             echo '<h1>Football Training Articles</h1>'
-            echo '<p><a href="../index.html">← Home</a></p>'
-            echo '<ul>'
+            echo '<p><a href="../index.html">← Home</a></p><ul>'
             for f in $(find posts -maxdepth 1 -type f -name '*.html' ! -name 'index.html' | sort); do
               slug=$(basename "$f" .html)
               title=$(echo "$slug" | tr '-' ' ')
@@ -80,10 +105,10 @@ jobs:
             echo '<html lang="en"><head><meta charset="utf-8">'
             echo '<meta name="viewport" content="width=device-width, initial-scale=1">'
             echo '<title>Football Fitness Training</title>'
-            echo '<meta name="description" content="Football fitness, training drills, recovery and conditioning articles.">'
+            echo '<meta name="description" content="Football training, recovery, conditioning and equipment guides.">'
             echo '</head><body>'
             echo '<h1>Football Fitness Training</h1>'
-            echo '<p>Football fitness, training drills, recovery and conditioning articles.</p>'
+            echo '<p>Practical football training, recovery, conditioning and equipment guides.</p>'
             echo '<h2>Latest articles</h2><ul>'
             find posts -maxdepth 1 -type f -name '*.html' ! -name 'index.html' -printf '%T@ %p\n' | sort -nr | head -10 | cut -d' ' -f2- | while read -r f; do
               slug=$(basename "$f" .html)
@@ -91,6 +116,7 @@ jobs:
               echo "<li><a href=\"posts/$slug.html\">$title</a></li>"
             done
             echo '</ul><p><a href="posts/index.html">View all articles</a></p>'
+            echo '<p><small>This site may earn a commission from qualifying purchases through some links.</small></p>'
             echo '</body></html>'
           } > index.html
 
@@ -111,5 +137,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add posts index.html sitemap.xml
-          git commit -m "Update articles, sitemap and post list" || exit 0
+          git commit -m "Create football guide and update site" || exit 0
           git push
