@@ -1,28 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
-  <url>
-    <loc>https://borkorobko.github.io/auto-blog/</loc>
-  </url>
-
-  <url>
-    <loc>https://borkorobko.github.io/auto-blog/posts/agility-drills-football.html</loc>
-  </url>
-
-  <url>
-    <loc>https://borkorobko.github.io/auto-blog/posts/best-boots-for-speed.html</loc>
-  </url>
-
-  <url>
-    <loc>https://borkorobko.github.io/auto-blog/posts/best-football-boots.html</loc>
-  </url>
-
-  <url>
-    <loc>https://borkorobko.github.io/auto-blog/posts/cheap-football-equipment.html</loc>
-  </url>
-
-  <url>
-    <loc>https://borkorobko.github.io/auto-blog/posts/core-workout-football.html</loc>
-  </url>
-
+  <url><loc>https://borkorobko.github.io/auto-blog/</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/index.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/agility-drills-football.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/best-boots-for-speed.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/best-football-boots.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/cheap-football-equipment.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/core-workout-football.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/explosive-training-football.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/foootball-news.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/football-conditioning-workout.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/football-endurance-training.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/football-fitness-training.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/football-recovery-workout.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/football-stamina-training.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/football-training-drills.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/football-warm-up-routine.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/football-workout.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/gym-workout-for-football-players.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/home-workout-for-footballers.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/how-to-get-faster-in-football.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/leg-workout-for-football.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/plyometrics-football.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/protein-for-footballers.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/speed-training-for-football.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/strength-training-for-football.html</loc></url>
+  <url><loc>https://borkorobko.github.io/auto-blog/posts/test.html</loc></url>
 </urlset>
