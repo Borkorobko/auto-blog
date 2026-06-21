@@ -3,7 +3,7 @@ name: Auto Football Site
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */3 * * *"
+    - cron: "0 10 * * 1,4"
 
 permissions:
   contents: write
