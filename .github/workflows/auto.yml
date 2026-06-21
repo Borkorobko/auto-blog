@@ -1,4 +1,4 @@
-name: Auto Fitness Football Site
+name: Auto Football Site
 
 on:
   workflow_dispatch:
@@ -11,32 +11,105 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Pick keyword
+      - name: Create article and site files
         run: |
-          KEYWORD=$(shuf -n 1 keywords.txt)
-          echo "KEYWORD=$KEYWORD" >> $GITHUB_ENV
-
-      - name: Create article
-        run: |
+          set -e
           mkdir -p posts
-          FILE="posts/${KEYWORD// /-}.html"
 
-          echo "<html><body>" > $FILE
-          echo "<h1>$KEYWORD</h1>" >> $FILE
-          echo "<p>$KEYWORD helps football players improve fitness and performance.</p>" >> $FILE
-          echo "<h2>Training tips</h2>" >> $FILE
-          echo "<ul><li>Train consistently</li><li>Focus on speed</li></ul>" >> $FILE
-          echo "<h2>Gear</h2>" >> $FILE
-          echo "<p><a href='https://amzn.to/'>Football gear</a></p>" >> $FILE
-          echo "</body></html>" >> $FILE
+          KEYWORD=$(shuf -n 1 keywords.txt)
+          SLUG=$(echo "$KEYWORD" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+          FILE="posts/$SLUG.html"
+
+          if [ ! -f "$FILE" ]; then
+            cat > "$FILE" <<EOF
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>$KEYWORD | Football Fitness Training</title>
+            <meta name="description" content="Training tips and football fitness information about $KEYWORD.">
+          </head>
+          <body>
+            <header>
+              <p><a href="../index.html">← Football Fitness Training</a></p>
+            </header>
+            <main>
+              <article>
+                <h1>$KEYWORD</h1>
+                <p>$KEYWORD can help football players improve fitness, movement, and match performance.</p>
+
+                <h2>Training tips</h2>
+                <ul>
+                  <li>Train consistently and increase intensity gradually.</li>
+                  <li>Focus on technique before adding speed or weight.</li>
+                  <li>Include rest days so your body can recover.</li>
+                </ul>
+
+                <h2>Useful football gear</h2>
+                <p><a href="https://amzn.to/">Browse football training gear</a></p>
+              </article>
+            </main>
+          </body>
+          </html>
+          EOF
+          fi
+
+          {
+            echo '<!doctype html>'
+            echo '<html lang="en"><head><meta charset="utf-8">'
+            echo '<meta name="viewport" content="width=device-width, initial-scale=1">'
+            echo '<title>Football Training Articles</title></head><body>'
+            echo '<h1>Football Training Articles</h1>'
+            echo '<p><a href="../index.html">← Home</a></p>'
+            echo '<ul>'
+            for f in $(find posts -maxdepth 1 -type f -name '*.html' ! -name 'index.html' | sort); do
+              slug=$(basename "$f" .html)
+              title=$(echo "$slug" | tr '-' ' ')
+              echo "<li><a href=\"$slug.html\">$title</a></li>"
+            done
+            echo '</ul></body></html>'
+          } > posts/index.html
+
+          {
+            echo '<!doctype html>'
+            echo '<html lang="en"><head><meta charset="utf-8">'
+            echo '<meta name="viewport" content="width=device-width, initial-scale=1">'
+            echo '<title>Football Fitness Training</title>'
+            echo '<meta name="description" content="Football fitness, training drills, recovery and conditioning articles.">'
+            echo '</head><body>'
+            echo '<h1>Football Fitness Training</h1>'
+            echo '<p>Football fitness, training drills, recovery and conditioning articles.</p>'
+            echo '<h2>Latest articles</h2><ul>'
+            find posts -maxdepth 1 -type f -name '*.html' ! -name 'index.html' -printf '%T@ %p\n' | sort -nr | head -10 | cut -d' ' -f2- | while read -r f; do
+              slug=$(basename "$f" .html)
+              title=$(echo "$slug" | tr '-' ' ')
+              echo "<li><a href=\"posts/$slug.html\">$title</a></li>"
+            done
+            echo '</ul><p><a href="posts/index.html">View all articles</a></p>'
+            echo '</body></html>'
+          } > index.html
+
+          {
+            echo '<?xml version="1.0" encoding="UTF-8"?>'
+            echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+            echo '  <url><loc>https://borkorobko.github.io/auto-blog/</loc></url>'
+            echo '  <url><loc>https://borkorobko.github.io/auto-blog/posts/index.html</loc></url>'
+            for f in $(find posts -maxdepth 1 -type f -name '*.html' ! -name 'index.html' | sort); do
+              slug=$(basename "$f" .html)
+              echo "  <url><loc>https://borkorobko.github.io/auto-blog/posts/$slug.html</loc></url>"
+            done
+            echo '</urlset>'
+          } > sitemap.xml
 
       - name: Commit and push
         run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add .
-          git commit -m "auto article" || echo "nothing to commit"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add posts index.html sitemap.xml
+          git commit -m "Update articles, sitemap and post list" || exit 0
           git push
