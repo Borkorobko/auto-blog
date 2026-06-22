@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create article and update site
+      - name: Create better article and update site
         run: |
           set -e
           mkdir -p posts
@@ -25,15 +25,36 @@ jobs:
           SLUG=$(echo "$SLUG" | sed 's/^-//; s/-$//')
           FILE="posts/$SLUG.html"
 
-          if [ ! -f "$FILE" ]; then
-            cat > "$FILE" <<EOF
+          if echo "$KEYWORD" | grep -qi "boots"; then
+            CATEGORY="Football boots guide"
+            SECTION1="Fit, surface and comfort matter more than brand name. Players should choose boots based on pitch type, foot shape, playing position and budget."
+            SECTION2="Look for the correct soleplate, enough lockdown, comfortable upper material and a return policy in case the fit is wrong."
+            TIPS="<li>Wide feet usually need softer uppers or wider lasts.</li><li>Artificial grass needs AG or turf-friendly studs.</li><li>Speed players often prefer lighter boots, but comfort still matters.</li>"
+          elif echo "$KEYWORD" | grep -qi "water bottle\|equipment\|cones\|ladder\|bands\|rebounder\|backpack\|gloves\|guards\|socks\|football for training"; then
+            CATEGORY="Football equipment guide"
+            SECTION1="Good football equipment should be durable, easy to use and suitable for regular training. The best option depends on age, training frequency and budget."
+            SECTION2="Check material quality, size, portability, cleaning, storage and whether the product solves a real training problem."
+            TIPS="<li>Choose practical gear over flashy design.</li><li>Prefer equipment that can be used in many drills.</li><li>For team training, durability matters more than premium branding.</li>"
+          elif echo "$KEYWORD" | grep -qi "protein\|creatine\|nutrition\|eat\|hydration\|supplements"; then
+            CATEGORY="Football nutrition guide"
+            SECTION1="Nutrition supports energy, recovery and training quality. Football players should focus on normal food first, then consider supplements only when basics are consistent."
+            SECTION2="Before buying supplements, look at diet, sleep, hydration and match schedule. Supplements cannot replace proper meals."
+            TIPS="<li>Eat carbohydrates before hard sessions or matches.</li><li>Include protein after training to support recovery.</li><li>Drink water regularly instead of waiting until you feel thirsty.</li>"
+          else
+            CATEGORY="Football training guide"
+            SECTION1="Football training should improve match performance, not just make a player tired. Speed, stamina, strength, agility and recovery should be trained with a clear plan."
+            SECTION2="Start with simple drills, increase intensity gradually and track how your body feels after each session."
+            TIPS="<li>Warm up before every hard session.</li><li>Train speed when fresh, not exhausted.</li><li>Use rest days to avoid overuse injuries.</li>"
+          fi
+
+          cat > "$FILE" <<EOF
           <!doctype html>
           <html lang="en">
           <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>$KEYWORD | Football Fitness Training</title>
-            <meta name="description" content="A practical guide to $KEYWORD, with football training advice, buying considerations and common mistakes.">
+            <meta name="description" content="$CATEGORY about $KEYWORD for football players.">
           </head>
           <body>
             <header>
@@ -44,46 +65,36 @@ jobs:
               <article>
                 <h1>$KEYWORD</h1>
 
-                <p>This guide explains the main things football players should consider when researching <strong>$KEYWORD</strong>. Use it as a starting point, then adapt the advice to your position, playing surface, budget and training level.</p>
+                <p>This $CATEGORY explains what football players should consider when researching <strong>$KEYWORD</strong>.</p>
 
-                <h2>Who this is for</h2>
-                <p>This topic is useful for players who want to improve match performance, train more comfortably, or choose equipment that fits their needs. Beginners should prioritize comfort and durability; experienced players can focus more on specific performance features.</p>
+                <h2>Why this matters</h2>
+                <p>$SECTION1</p>
 
-                <h2>What matters most</h2>
+                <h2>What to look for</h2>
+                <p>$SECTION2</p>
+
+                <h2>Practical tips</h2>
                 <ul>
-                  <li><strong>Fit and comfort:</strong> Equipment or training plans should feel stable and not cause pain, rubbing or unnecessary fatigue.</li>
-                  <li><strong>Playing conditions:</strong> Consider your pitch surface, weather, training frequency and position.</li>
-                  <li><strong>Progression:</strong> Increase training volume gradually instead of trying to improve everything in one week.</li>
-                  <li><strong>Recovery:</strong> Sleep, food, hydration and rest days matter as much as the session itself.</li>
+                  $TIPS
                 </ul>
-
-                <h2>A simple way to use this advice</h2>
-                <ol>
-                  <li>Choose one goal for the next four weeks: speed, stamina, strength, recovery or better equipment.</li>
-                  <li>Keep two or three sessions per week focused on that goal.</li>
-                  <li>Track how you feel after sessions and reduce volume if pain or unusual fatigue appears.</li>
-                  <li>Review your progress after four weeks and adjust one variable at a time.</li>
-                </ol>
 
                 <h2>Common mistakes</h2>
                 <ul>
-                  <li>Buying based only on a professional player's name or a flashy design.</li>
-                  <li>Changing boots, supplements or training plans too often to judge results.</li>
-                  <li>Ignoring fit, recovery and basic technique.</li>
-                  <li>Training hard every day without a realistic recovery plan.</li>
+                  <li>Choosing based only on price or brand.</li>
+                  <li>Ignoring comfort, recovery or long-term use.</li>
+                  <li>Copying professional players without considering personal needs.</li>
                 </ul>
 
-                <h2>Useful next steps</h2>
-                <p>For more football training topics, browse the <a href="index.html">full article list</a>. If you are considering equipment, compare several options, read independent reviews and check the seller's return policy before buying.</p>
+                <h2>Recommended next step</h2>
+                <p>Compare several options, read real reviews and choose based on your level, position and budget.</p>
 
                 <h2>Disclosure</h2>
-                <p>This site may earn a commission from qualifying purchases through some links. Recommendations should always be checked against your own needs and budget.</p>
+                <p>This site may earn a commission from qualifying purchases through some links.</p>
               </article>
             </main>
           </body>
           </html>
           EOF
-          fi
 
           {
             echo '<!doctype html>'
@@ -137,5 +148,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add posts index.html sitemap.xml
-          git commit -m "Create football guide and update site" || exit 0
+          git commit -m "Improve article quality and update site" || exit 0
           git push
