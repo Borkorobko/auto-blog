@@ -25,7 +25,7 @@ jobs:
           SLUG=$(echo "$SLUG" | sed 's/^-//; s/-$//')
           FILE="posts/$SLUG.html"
 
-          if [ ! -f "$FILE" ]; then
+         
             cat > "$FILE" <<EOF
           <!doctype html>
           <html lang="en">
@@ -78,7 +78,7 @@ jobs:
           </body>
           </html>
           EOF
-          fi
+          
 
           {
             echo '<!doctype html>'
