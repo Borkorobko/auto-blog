@@ -131,6 +131,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add posts index.html sitemap.xml
+          git add posts index.html sitemap.xml style.css
           git commit -m "Create football guide and update site" || exit 0
           git push
