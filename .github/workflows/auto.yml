@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create better article and update site
+      - name: Create article and update site
         run: |
           set -e
           mkdir -p posts
@@ -25,162 +25,59 @@ jobs:
           SLUG=$(echo "$SLUG" | sed 's/^-//; s/-$//')
           FILE="posts/$SLUG.html"
 
-          if echo "$KEYWORD" | grep -qi "speed\|agility\|drills\|faster"; then
-  CATEGORY="Football speed training guide"
-
-  INTRO="Speed in football is not only about running fast in a straight line. Players need quick acceleration, sharp changes of direction, good sprint technique and enough recovery between hard efforts."
-
-  SECTION1="Start every speed session with 10 to 15 minutes of warm-up: light jogging, leg swings, hip mobility, skipping and a few short accelerations. Do not begin full sprints with cold muscles."
-
-  DRILLS="<li><strong>10-metre accelerations:</strong> 6 repetitions, rest 60 to 90 seconds. Focus on powerful first steps.</li>
-  <li><strong>20-metre sprints:</strong> 4 repetitions, rest 2 minutes. Keep your body slightly forward during acceleration.</li>
-  <li><strong>Shuttle runs:</strong> Sprint 5 metres, turn, sprint back. Do 5 repetitions for 3 sets.</li>
-  <li><strong>Agility cone drill:</strong> Place 4 cones in a square and change direction quickly for 20 seconds.</li>
-  <li><strong>Hill sprints:</strong> 6 short uphill sprints can build acceleration strength without needing heavy gym equipment.</li>"
-
-  PLAN="<li><strong>Day 1:</strong> Warm-up, 10-metre accelerations, agility cone drill, easy recovery jog.</li>
-  <li><strong>Day 2:</strong> Warm-up, 20-metre sprints, shuttle runs, mobility work.</li>
-  <li>Leave at least 48 hours between hard speed sessions.</li>"
-
-  MISTAKES="<li>Doing speed work when already exhausted from a hard leg workout.</li>
-  <li>Using too little rest between sprints.</li>
-  <li>Training speed every day instead of allowing recovery.</li>
-  <li>Ignoring sprint technique and posture.</li>"
-
-elif echo "$KEYWORD" | grep -qi "boots"; then
-  CATEGORY="Football boots buying guide"
-
-  INTRO="Football boots affect comfort, grip and confidence on the pitch. The best boots are not always the most expensive pair; they are the pair that fits your foot and playing surface properly."
-
-  SECTION1="Before choosing boots, check your usual playing surface. Firm-ground boots are common for natural grass, while artificial-grass boots are safer for many 3G and 4G pitches."
-
-  DRILLS="<li><strong>Fit test:</strong> Leave a small amount of space in front of your toes but avoid heel movement.</li>
-  <li><strong>Walk test:</strong> Walk and lightly jog indoors before removing tags.</li>
-  <li><strong>Surface check:</strong> Match the soleplate to your main pitch type.</li>
-  <li><strong>Break-in plan:</strong> Wear new boots for short sessions first.</li>"
-
-  PLAN="<li><strong>First session:</strong> 20 to 30 minutes of light training.</li>
-  <li><strong>Second session:</strong> Use them for passing and movement drills.</li>
-  <li><strong>Match use:</strong> Only use them in a match after they feel comfortable.</li>"
-
-  MISTAKES="<li>Buying based only on a professional player's name.</li>
-  <li>Using firm-ground studs on unsuitable artificial surfaces.</li>
-  <li>Choosing a size that feels painful because it looks tighter.</li>
-  <li>Ignoring return policies when buying online.</li>"
-
-elif echo "$KEYWORD" | grep -qi "water bottle\|equipment\|cones\|ladder\|bands\|rebounder\|backpack\|gloves\|guards\|socks"; then
-  CATEGORY="Football equipment guide"
-
-  INTRO="Useful football equipment should make training easier, safer or more consistent. A good product does not need to be expensive, but it should be durable and practical."
-
-  SECTION1="Choose equipment based on how often you train, where you train and whether you need to carry it to the pitch. For most players, simple gear that gets used every week is better than expensive gear that stays at home."
-
-  DRILLS="<li><strong>Cones:</strong> Use them for dribbling, acceleration and change-of-direction drills.</li>
-  <li><strong>Agility ladder:</strong> Use short footwork patterns before speed work.</li>
-  <li><strong>Resistance bands:</strong> Use them for warm-ups, glute activation and strength exercises.</li>
-  <li><strong>Water bottle:</strong> Keep it easy to clean, leak-proof and large enough for your session.</li>"
-
-  PLAN="<li><strong>Before training:</strong> Pack water, boots, shin guards and one training tool.</li>
-  <li><strong>During training:</strong> Use cones or a ladder for one focused drill block.</li>
-  <li><strong>After training:</strong> Clean bottles and air out boots or equipment.</li>"
-
-  MISTAKES="<li>Buying equipment only because it looks professional.</li>
-  <li>Choosing gear that is difficult to carry or clean.</li>
-  <li>Using damaged shin guards, boots or bottles.</li>
-  <li>Buying too much gear before building a consistent routine.</li>"
-
-elif echo "$KEYWORD" | grep -qi "protein\|nutrition\|hydration\|supplements"; then
-  CATEGORY="Football nutrition guide"
-
-  INTRO="Nutrition helps football players train with more energy and recover better. The basics are regular meals, enough fluids, carbohydrates for hard work and protein for recovery."
-
-  SECTION1="Food should come first. Supplements can be useful in some situations, but they cannot fix poor sleep, low calorie intake or inconsistent training."
-
-  DRILLS="<li><strong>Before training:</strong> Eat a light carbohydrate-based meal 2 to 3 hours before hard exercise.</li>
-  <li><strong>After training:</strong> Eat a meal with protein and carbohydrates within a few hours.</li>
-  <li><strong>Hydration:</strong> Drink water throughout the day, not only during training.</li>
-  <li><strong>Match day:</strong> Avoid trying unfamiliar supplements or foods.</li>"
-
-  PLAN="<li><strong>Morning:</strong> Breakfast with carbohydrates and protein.</li>
-  <li><strong>Before training:</strong> Simple meal or snack depending on timing.</li>
-  <li><strong>After training:</strong> Recovery meal and water.</li>"
-
-  MISTAKES="<li>Skipping meals before hard training.</li>
-  <li>Relying on supplements instead of normal food.</li>
-  <li>Not drinking enough water during hot weather.</li>
-  <li>Trying new products on match day.</li>"
-
-else
-  CATEGORY="Football training guide"
-
-  INTRO="Football training works best when it has a clear purpose. Players should build fitness gradually through technical work, strength, speed, endurance and recovery."
-
-  SECTION1="Start with a realistic plan based on your current level. Two or three focused sessions per week are usually more useful than training hard every day without recovery."
-
-  DRILLS="<li><strong>Warm-up:</strong> Use mobility, light jogging and simple ball work.</li>
-  <li><strong>Technical block:</strong> Practice passing, dribbling or first touch for 15 to 20 minutes.</li>
-  <li><strong>Fitness block:</strong> Add short runs, bodyweight strength or conditioning.</li>
-  <li><strong>Cool-down:</strong> Walk, stretch lightly and rehydrate.</li>"
-
-  PLAN="<li><strong>Day 1:</strong> Technical work and speed.</li>
-  <li><strong>Day 2:</strong> Strength and conditioning.</li>
-  <li><strong>Day 3:</strong> Easy recovery, mobility or ball work.</li>"
-
-  MISTAKES="<li>Increasing training volume too quickly.</li>
-  <li>Skipping warm-ups.</li>
-  <li>Ignoring pain or unusual fatigue.</li>
-  <li>Copying advanced plans without enough base fitness.</li>"
-fi
-          cat > "$FILE" <<EOF
+          if [ ! -f "$FILE" ]; then
+            cat > "$FILE" <<EOF
           <!doctype html>
           <html lang="en">
           <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>$KEYWORD | Football Fitness Training</title>
-            <meta name="description" content="$CATEGORY about $KEYWORD for football players.">
+            <meta name="description" content="Practical football guide for $KEYWORD.">
           </head>
           <body>
-            <header>
-              <p><a href="../index.html">← Football Fitness Training</a> · <a href="index.html">All articles</a></p>
-            </header>
+            <p><a href="../index.html">← Football Fitness Training</a> · <a href="index.html">All articles</a></p>
 
-            <main>
-              <article>
-                <h1>$KEYWORD</h1>
+            <h1>$KEYWORD</h1>
 
-                <p>This $CATEGORY explains the most useful things football players should know about <strong>$KEYWORD</strong>.</p>
+            <h2>Overview</h2>
+            <p>This football guide explains $KEYWORD in a practical way. Use the advice according to your current fitness, playing position and training schedule.</p>
 
-<h2>Overview</h2>
-<p>$INTRO</p>
+            <h2>Getting started</h2>
+            <p>Start with a realistic plan. Train consistently, increase difficulty gradually and leave enough time for recovery.</p>
 
-<h2>Getting started</h2>
-<p>$SECTION1</p>
+            <h2>Practical drills and actions</h2>
+            <ul>
+              <li>Warm up for 10 to 15 minutes before hard training.</li>
+              <li>Focus on good technique before increasing speed or volume.</li>
+              <li>Use two or three focused sessions per week.</li>
+              <li>Track fatigue and reduce intensity when needed.</li>
+            </ul>
 
-<h2>Practical drills or actions</h2>
-<ul>
-  $DRILLS
-</ul>
+            <h2>Simple weekly plan</h2>
+            <ul>
+              <li>Day 1: Technical work and speed.</li>
+              <li>Day 2: Strength or conditioning.</li>
+              <li>Day 3: Recovery, mobility or light ball work.</li>
+            </ul>
 
-<h2>Simple weekly plan</h2>
-<ul>
-  $PLAN
-</ul>
+            <h2>Common mistakes</h2>
+            <ul>
+              <li>Increasing training volume too quickly.</li>
+              <li>Skipping warm-ups.</li>
+              <li>Training hard every day without recovery.</li>
+              <li>Ignoring pain or unusual fatigue.</li>
+            </ul>
 
-<h2>Common mistakes</h2>
-<ul>
-  $MISTAKES
-</ul>
+            <h2>Useful next step</h2>
+            <p>Use this guide as a starting point and browse the <a href="index.html">full article list</a> for related football topics.</p>
 
-<h2>Useful next step</h2>
-<p>Use this guide as a starting point, test what works for your level and adjust gradually. For more topics, browse the <a href="index.html">full article list</a>.</p>
-                <h2>Disclosure</h2>
-                <p>This site may earn a commission from qualifying purchases through some links.</p>
-              </article>
-            </main>
+            <h2>Disclosure</h2>
+            <p>This site may earn a commission from qualifying purchases through some links.</p>
           </body>
           </html>
           EOF
+          fi
 
           {
             echo '<!doctype html>'
@@ -189,9 +86,9 @@ fi
             echo '<title>Football Training Articles</title></head><body>'
             echo '<h1>Football Training Articles</h1>'
             echo '<p><a href="../index.html">← Home</a></p><ul>'
-            for f in $(find posts -maxdepth 1 -type f -name '*.html' ! -name 'index.html' | sort); do
+            for f in $(find posts -maxdepth 1 -type f -name "*.html" ! -name "index.html" | sort); do
               slug=$(basename "$f" .html)
-              title=$(echo "$slug" | tr '-' ' ')
+              title=$(echo "$slug" | tr "-" " ")
               echo "<li><a href=\"$slug.html\">$title</a></li>"
             done
             echo '</ul></body></html>'
@@ -207,9 +104,9 @@ fi
             echo '<h1>Football Fitness Training</h1>'
             echo '<p>Practical football training, recovery, conditioning and equipment guides.</p>'
             echo '<h2>Latest articles</h2><ul>'
-            find posts -maxdepth 1 -type f -name '*.html' ! -name 'index.html' -printf '%T@ %p\n' | sort -nr | head -10 | cut -d' ' -f2- | while read -r f; do
+            find posts -maxdepth 1 -type f -name "*.html" ! -name "index.html" -printf "%T@ %p\n" | sort -nr | head -10 | cut -d" " -f2- | while read -r f; do
               slug=$(basename "$f" .html)
-              title=$(echo "$slug" | tr '-' ' ')
+              title=$(echo "$slug" | tr "-" " ")
               echo "<li><a href=\"posts/$slug.html\">$title</a></li>"
             done
             echo '</ul><p><a href="posts/index.html">View all articles</a></p>'
@@ -222,7 +119,7 @@ fi
             echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
             echo '  <url><loc>https://borkorobko.github.io/auto-blog/</loc></url>'
             echo '  <url><loc>https://borkorobko.github.io/auto-blog/posts/index.html</loc></url>'
-            for f in $(find posts -maxdepth 1 -type f -name '*.html' ! -name 'index.html' | sort); do
+            for f in $(find posts -maxdepth 1 -type f -name "*.html" ! -name "index.html" | sort); do
               slug=$(basename "$f" .html)
               echo "  <url><loc>https://borkorobko.github.io/auto-blog/posts/$slug.html</loc></url>"
             done
@@ -234,5 +131,5 @@ fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add posts index.html sitemap.xml
-          git commit -m "Improve article quality and update site" || exit 0
+          git commit -m "Create football guide and update site" || exit 0
           git push
