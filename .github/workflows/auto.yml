@@ -34,6 +34,7 @@ jobs:
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>$KEYWORD | Football Fitness Training</title>
             <meta name="description" content="Practical football guide for $KEYWORD.">
+            <link rel="stylesheet" href="../style.css">
           </head>
           <body>
             <p><a href="../index.html">← Football Fitness Training</a> · <a href="index.html">All articles</a></p>
