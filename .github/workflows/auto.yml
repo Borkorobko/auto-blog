@@ -72,16 +72,7 @@ jobs:
           <h2>Weekly routine</h2>
           <p>Train strength 2 times per week, ideally away from match day.</p>
           """,
-              "equipment": f"""
-          <h2>Buying guide</h2>
-          <p>When choosing {kw}, focus on comfort, durability, price and how often you will actually use it.</p>
-          <h2>What to look for</h2>
-          <ul><li>Durable material</li><li>Easy cleaning</li><li>Good value for money</li><li>Suitable size for football training</li></ul>
-          <h2>Common mistakes</h2>
-          <ul><li>Buying only because of brand name</li><li>Ignoring return policy</li><li>Choosing style over practical use</li></ul>
-          <h2>Maintenance</h2>
-          <p>Clean equipment after training and store it dry so it lasts longer.</p>
-          """,
+              "equipment": Path("templates/equipment.html").read_text().replace("{{KEYWORD}}", kw),
               "nutrition": f"""
           <h2>Why nutrition matters</h2>
           <p>Good nutrition helps football players train with energy and recover after matches or hard sessions.</p>
