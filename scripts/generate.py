@@ -2,12 +2,14 @@ from pathlib import Path
 import random
 import re
 import html
+import os
+from openai import OpenAI
 
 SITE = "https://borkorobko.github.io/auto-blog"
-
-ROOT = Path(".")
-POSTS = ROOT / "posts"
+POSTS = Path("posts")
 POSTS.mkdir(exist_ok=True)
+
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 keywords = [
     k.strip()
@@ -17,54 +19,44 @@ keywords = [
 
 keyword = random.choice(keywords)
 
-
 def slugify(text):
     text = text.lower()
     text = re.sub(r"[^a-z0-9]+", "-", text)
     return text.strip("-")
 
-
 slug = slugify(keyword)
 file = POSTS / f"{slug}.html"
 safe_keyword = html.escape(keyword)
 
+prompt = f"""
+Write a helpful football fitness article for the keyword: "{keyword}".
 
-def choose_template(keyword):
-    k = keyword.lower()
+Requirements:
+- Write in English.
+- Target amateur and beginner-to-intermediate football players.
+- Make it practical, specific and useful.
+- Avoid fake statistics.
+- Do not mention that AI wrote it.
+- Do not use markdown.
+- Return only valid HTML sections that go inside an <article>.
+- Use h2, h3, p, ul, li.
+- Include:
+  1. introduction
+  2. why it matters
+  3. practical advice
+  4. mistakes to avoid
+  5. simple weekly plan or buying guide depending on topic
+  6. FAQ with 3 questions
+- Around 900 to 1300 words.
+- Add no external links.
+"""
 
-    if any(x in k for x in ["speed", "faster", "agility", "drills"]):
-        template_path = Path("templates/speed.html")
-    elif any(x in k for x in ["boot", "shin", "glove", "bottle", "cones", "ladder", "bands", "backpack", "equipment", "socks", "rebounder"]):
-        template_path = Path("templates/equipment.html")
-    elif any(x in k for x in ["strength", "leg workout", "core workout", "gym workout", "plyometric"]):
-        template_path = Path("templates/strength.html")
-    else:
-        template_path = None
+response = client.responses.create(
+    model="gpt-4.1-mini",
+    input=prompt,
+)
 
-    if template_path and template_path.exists():
-        return template_path.read_text(encoding="utf-8").replace("{{KEYWORD}}", safe_keyword)
-
-    return f"""
-      <h2>Overview</h2>
-      <p>This guide explains {safe_keyword} for football players who want practical and useful training advice.</p>
-
-      <h2>Getting started</h2>
-      <p>Start simple. Focus on consistency, correct technique and enough recovery between hard sessions.</p>
-
-      <h2>Practical tips</h2>
-      <ul>
-        <li>Warm up properly before every session.</li>
-        <li>Increase training volume gradually.</li>
-        <li>Track fatigue and avoid training hard every day.</li>
-      </ul>
-
-      <h2>FAQ</h2>
-      <h3>Is this suitable for beginners?</h3>
-      <p>Yes. Beginners should start slowly and focus on good technique first.</p>
-    """
-
-
-template_body = choose_template(keyword)
+article_body = response.output_text.strip()
 
 article = f"""<!doctype html>
 <html lang="en">
@@ -83,7 +75,7 @@ article = f"""<!doctype html>
   <main>
     <article>
       <h1>{safe_keyword}</h1>
-      {template_body}
+      {article_body}
 
       <p class="disclosure">This site may earn a commission from qualifying purchases through some links.</p>
     </article>
@@ -171,4 +163,4 @@ sitemap += "</urlset>\n"
 
 Path("sitemap.xml").write_text(sitemap, encoding="utf-8")
 
-print(f"Generated: {file}")
+print(f"Generated AI article: {file}")
