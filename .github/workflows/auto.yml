@@ -15,13 +15,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: pip install openai
+
       - name: Generate site
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python3 scripts/generate.py
 
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add posts index.html sitemap.xml style.css scripts
-          git commit -m "Generate football article and update site" || exit 0
+          git add posts index.html sitemap.xml style.css scripts templates
+          git commit -m "Generate AI football article and update site" || exit 0
           git push
