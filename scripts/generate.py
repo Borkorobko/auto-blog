@@ -36,6 +36,8 @@ def choose_template(keyword):
         template_path = Path("templates/speed.html")
     elif any(x in k for x in ["boot", "shin", "glove", "bottle", "cones", "ladder", "bands", "backpack", "equipment", "socks", "rebounder"]):
         template_path = Path("templates/equipment.html")
+    elif any(x in k for x in ["strength", "leg workout", "core workout", "gym workout", "plyometric"]):
+        template_path = Path("templates/strength.html")
     else:
         template_path = None
 
@@ -55,6 +57,10 @@ def choose_template(keyword):
         <li>Increase training volume gradually.</li>
         <li>Track fatigue and avoid training hard every day.</li>
       </ul>
+
+      <h2>FAQ</h2>
+      <h3>Is this suitable for beginners?</h3>
+      <p>Yes. Beginners should start slowly and focus on good technique first.</p>
     """
 
 
