@@ -29,6 +29,37 @@ file = POSTS / f"{slug}.html"
 safe_keyword = html.escape(keyword)
 
 
+def choose_template(keyword):
+    k = keyword.lower()
+
+    if any(x in k for x in ["speed", "faster", "agility", "drills"]):
+        template_path = Path("templates/speed.html")
+    elif any(x in k for x in ["boot", "shin", "glove", "bottle", "cones", "ladder", "bands", "backpack", "equipment", "socks", "rebounder"]):
+        template_path = Path("templates/equipment.html")
+    else:
+        template_path = None
+
+    if template_path and template_path.exists():
+        return template_path.read_text(encoding="utf-8").replace("{{KEYWORD}}", safe_keyword)
+
+    return f"""
+      <h2>Overview</h2>
+      <p>This guide explains {safe_keyword} for football players who want practical and useful training advice.</p>
+
+      <h2>Getting started</h2>
+      <p>Start simple. Focus on consistency, correct technique and enough recovery between hard sessions.</p>
+
+      <h2>Practical tips</h2>
+      <ul>
+        <li>Warm up properly before every session.</li>
+        <li>Increase training volume gradually.</li>
+        <li>Track fatigue and avoid training hard every day.</li>
+      </ul>
+    """
+
+
+template_body = choose_template(keyword)
+
 article = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -46,34 +77,7 @@ article = f"""<!doctype html>
   <main>
     <article>
       <h1>{safe_keyword}</h1>
-
-      <h2>Overview</h2>
-      <p>This guide explains {safe_keyword} for football players who want practical and useful training advice.</p>
-
-      <h2>Getting started</h2>
-      <p>Start simple. Focus on consistency, correct technique and enough recovery between hard sessions.</p>
-
-      <h2>Practical tips</h2>
-      <ul>
-        <li>Warm up properly before every session.</li>
-        <li>Increase training volume gradually.</li>
-        <li>Track fatigue and avoid training hard every day.</li>
-        <li>Use equipment only when it solves a real training problem.</li>
-      </ul>
-
-      <h2>Common mistakes</h2>
-      <ul>
-        <li>Copying professional players without adapting to your own level.</li>
-        <li>Ignoring recovery.</li>
-        <li>Buying gear before building a consistent routine.</li>
-      </ul>
-
-      <h2>FAQ</h2>
-      <h3>Is this suitable for beginners?</h3>
-      <p>Yes. Beginners should start slowly and focus on good technique first.</p>
-
-      <h3>How often should football players work on this?</h3>
-      <p>Most players can start with 1 to 3 focused sessions per week.</p>
+      {template_body}
 
       <p class="disclosure">This site may earn a commission from qualifying purchases through some links.</p>
     </article>
@@ -83,7 +87,6 @@ article = f"""<!doctype html>
 """
 
 file.write_text(article, encoding="utf-8")
-
 
 post_files = sorted(
     [p for p in POSTS.glob("*.html") if p.name != "index.html"],
@@ -115,7 +118,6 @@ posts_index += """  </ul>
 """
 
 (POSTS / "index.html").write_text(posts_index, encoding="utf-8")
-
 
 home = """<!doctype html>
 <html lang="en">
@@ -150,7 +152,6 @@ home += """    </ul>
 """
 
 Path("index.html").write_text(home, encoding="utf-8")
-
 
 sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n'
 sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
