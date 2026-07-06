@@ -7,16 +7,52 @@ from openai import OpenAI
 
 SITE = "https://borkorobko.github.io/auto-blog"
 POSTS = Path("posts")
+PAGES = Path("pages")
 POSTS.mkdir(exist_ok=True)
 
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
-keywords = [
-    k.strip()
-    for k in Path("keywords.txt").read_text(encoding="utf-8").splitlines()
-    if k.strip()
-]
+NAV_ROOT = """
+<nav>
+  <a href="index.html">Home</a> |
+  <a href="posts/index.html">Articles</a> |
+  <a href="pages/about.html">About</a> |
+  <a href="pages/contact.html">Contact</a>
+</nav>
+"""
 
+NAV_POST = """
+<nav>
+  <a href="../index.html">Home</a> |
+  <a href="index.html">Articles</a> |
+  <a href="../pages/about.html">About</a> |
+  <a href="../pages/contact.html">Contact</a>
+</nav>
+"""
+
+FOOTER_ROOT = """
+<footer>
+  <p>
+    <a href="pages/privacy.html">Privacy Policy</a> |
+    <a href="pages/cookies.html">Cookie Policy</a> |
+    <a href="pages/terms.html">Terms of Service</a>
+  </p>
+  <p class="disclosure">This site may earn a commission from qualifying purchases through some links.</p>
+</footer>
+"""
+
+FOOTER_POST = """
+<footer>
+  <p>
+    <a href="../pages/privacy.html">Privacy Policy</a> |
+    <a href="../pages/cookies.html">Cookie Policy</a> |
+    <a href="../pages/terms.html">Terms of Service</a>
+  </p>
+  <p class="disclosure">This site may earn a commission from qualifying purchases through some links.</p>
+</footer>
+"""
+
+keywords = [k.strip() for k in Path("keywords.txt").read_text(encoding="utf-8").splitlines() if k.strip()]
 keyword = random.choice(keywords)
 
 def slugify(text):
@@ -69,17 +105,17 @@ article = f"""<!doctype html>
 </head>
 <body>
   <header>
-    <p><a href="../index.html">← Home</a> · <a href="index.html">All articles</a></p>
+    {NAV_POST}
   </header>
 
   <main>
     <article>
       <h1>{safe_keyword}</h1>
       {article_body}
-
-      <p class="disclosure">This site may earn a commission from qualifying purchases through some links.</p>
     </article>
   </main>
+
+  {FOOTER_POST}
 </body>
 </html>
 """
@@ -92,7 +128,7 @@ post_files = sorted(
     reverse=True,
 )
 
-posts_index = """<!doctype html>
+posts_index = f"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -101,23 +137,30 @@ posts_index = """<!doctype html>
   <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-  <h1>Football Training Articles</h1>
-  <p><a href="../index.html">← Home</a></p>
-  <ul class="article-list">
+  <header>
+    {NAV_POST}
+    <h1>Football Training Articles</h1>
+  </header>
+
+  <main>
+    <ul class="article-list">
 """
 
 for p in sorted(post_files):
     title = html.escape(p.stem.replace("-", " "))
-    posts_index += f'    <li><a href="{p.name}">{title}</a></li>\n'
+    posts_index += f'      <li><a href="{p.name}">{title}</a></li>\n'
 
-posts_index += """  </ul>
+posts_index += f"""    </ul>
+  </main>
+
+  {FOOTER_POST}
 </body>
 </html>
 """
 
 (POSTS / "index.html").write_text(posts_index, encoding="utf-8")
 
-home = """<!doctype html>
+home = f"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -128,6 +171,7 @@ home = """<!doctype html>
 </head>
 <body>
   <header>
+    {NAV_ROOT}
     <h1>Football Fitness Training</h1>
     <p>Improve your football performance with practical guides about speed, strength, recovery, nutrition and equipment.</p>
   </header>
@@ -141,24 +185,34 @@ for p in post_files[:10]:
     title = html.escape(p.stem.replace("-", " "))
     home += f'      <li><a href="posts/{p.name}">{title}</a></li>\n'
 
-home += """    </ul>
+home += f"""    </ul>
     <p><a href="posts/index.html">View all articles</a></p>
-    <p class="disclosure">This site may earn a commission from qualifying purchases through some links.</p>
   </main>
+
+  {FOOTER_ROOT}
 </body>
 </html>
 """
 
 Path("index.html").write_text(home, encoding="utf-8")
 
-sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n'
-sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-sitemap += f"  <url><loc>{SITE}/</loc></url>\n"
-sitemap += f"  <url><loc>{SITE}/posts/index.html</loc></url>\n"
+sitemap_urls = [
+    f"{SITE}/",
+    f"{SITE}/posts/index.html",
+    f"{SITE}/pages/about.html",
+    f"{SITE}/pages/contact.html",
+    f"{SITE}/pages/privacy.html",
+    f"{SITE}/pages/cookies.html",
+    f"{SITE}/pages/terms.html",
+]
 
 for p in sorted(post_files):
-    sitemap += f"  <url><loc>{SITE}/posts/{p.name}</loc></url>\n"
+    sitemap_urls.append(f"{SITE}/posts/{p.name}")
 
+sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n'
+sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+for url in sitemap_urls:
+    sitemap += f"  <url><loc>{url}</loc></url>\n"
 sitemap += "</urlset>\n"
 
 Path("sitemap.xml").write_text(sitemap, encoding="utf-8")
