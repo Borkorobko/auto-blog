@@ -7,6 +7,12 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -23,10 +29,21 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python3 scripts/generate.py
 
-      - name: Commit and push
+      - name: Commit generated files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add posts index.html sitemap.xml style.css scripts templates
-          git commit -m "Generate AI football article and update site" || exit 0
+          git add posts pages index.html sitemap.xml style.css scripts templates
+          git commit -m "Generate AI football article and update site" || echo "No changes to commit"
           git push
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
