@@ -7,8 +7,17 @@ from openai import OpenAI
 
 SITE = "https://borkorobko.github.io/auto-blog"
 POSTS = Path("posts")
-PAGES = Path("pages")
 POSTS.mkdir(exist_ok=True)
+
+GA = """
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Y6PG5M149E"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-Y6PG5M149E');
+</script>
+"""
 
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
@@ -76,13 +85,7 @@ Requirements:
 - Do not use markdown.
 - Return only valid HTML sections that go inside an <article>.
 - Use h2, h3, p, ul, li.
-- Include:
-  1. introduction
-  2. why it matters
-  3. practical advice
-  4. mistakes to avoid
-  5. simple weekly plan or buying guide depending on topic
-  6. FAQ with 3 questions
+- Include introduction, why it matters, practical advice, mistakes to avoid, simple weekly plan or buying guide, and FAQ with 3 questions.
 - Around 900 to 1300 words.
 - Add no external links.
 """
@@ -102,6 +105,7 @@ article = f"""<!doctype html>
   <title>{safe_keyword} | Football Fitness Training</title>
   <meta name="description" content="Practical football guide about {safe_keyword}.">
   <link rel="stylesheet" href="../style.css">
+  {GA}
 </head>
 <body>
   <header>
@@ -135,6 +139,7 @@ posts_index = f"""<!doctype html>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Football Training Articles</title>
   <link rel="stylesheet" href="../style.css">
+  {GA}
 </head>
 <body>
   <header>
@@ -168,6 +173,7 @@ home = f"""<!doctype html>
   <title>Football Fitness Training</title>
   <meta name="description" content="Football training, recovery, nutrition and equipment guides.">
   <link rel="stylesheet" href="style.css">
+  {GA}
 </head>
 <body>
   <header>
