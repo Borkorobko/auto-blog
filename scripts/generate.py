@@ -1,5 +1,4 @@
 from pathlib import Path
-import random
 import re
 import html
 import os
@@ -103,16 +102,44 @@ def article_meta_description(topic):
     return description[:155].rstrip()
 
 
+keywords_file = Path("keywords.txt")
+
 keywords = [
     line.strip()
-    for line in Path("keywords.txt").read_text(encoding="utf-8").splitlines()
+    for line in keywords_file.read_text(encoding="utf-8").splitlines()
     if line.strip()
 ]
 
 if not keywords:
-    raise RuntimeError("keywords.txt does not contain any usable keywords.")
+    raise RuntimeError("No keywords left in keywords.txt")
 
-keyword = random.choice(keywords)
+# Use the first keyword that does not already have a published article.
+skipped_existing = []
+keyword = None
+
+for candidate in keywords:
+    candidate_slug = slugify(candidate)
+
+    if candidate_slug and (POSTS / f"{candidate_slug}.html").exists():
+        skipped_existing.append(candidate)
+        continue
+
+    keyword = candidate
+    break
+
+if keyword is None:
+    keywords_file.write_text("", encoding="utf-8")
+    raise RuntimeError(
+        "All keywords in keywords.txt already have published articles. "
+        "Add new keywords before running the workflow again."
+    )
+
+remaining_keywords = [
+    item
+    for item in keywords
+    if item not in skipped_existing and item != keyword
+]
+
 slug = slugify(keyword)
 
 if not slug:
@@ -441,4 +468,14 @@ sitemap += "</urlset>\n"
 
 Path("sitemap.xml").write_text(sitemap, encoding="utf-8")
 
+# Remove the keyword only after the article and all site files were written.
+# If the API call or generation fails, keywords.txt remains unchanged.
+keywords_file.write_text(
+    "\n".join(remaining_keywords) + ("\n" if remaining_keywords else ""),
+    encoding="utf-8",
+)
+
 print(f"Generated AI article: {file}")
+print(f"Used keyword removed: {keyword}")
+print(f"Skipped already-published keywords: {len(skipped_existing)}")
+print(f"Keywords remaining: {len(remaining_keywords)}")
