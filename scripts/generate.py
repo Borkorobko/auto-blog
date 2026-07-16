@@ -19,6 +19,10 @@ gtag('config', 'G-Y6PG5M149E');
 </script>
 """
 
+FAVICON = """
+<link rel="icon" href="/auto-blog/favicon.ico" sizes="any">
+"""
+
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 NAV_ROOT = """
@@ -46,7 +50,9 @@ FOOTER_ROOT = """
     <a href="pages/cookies.html">Cookie Policy</a> |
     <a href="pages/terms.html">Terms of Service</a>
   </p>
-  <p class="disclosure">This site may earn a commission from qualifying purchases through some links.</p>
+  <p class="disclosure">
+    This site may earn a commission from qualifying purchases through some links.
+  </p>
 </footer>
 """
 
@@ -57,17 +63,26 @@ FOOTER_POST = """
     <a href="../pages/cookies.html">Cookie Policy</a> |
     <a href="../pages/terms.html">Terms of Service</a>
   </p>
-  <p class="disclosure">This site may earn a commission from qualifying purchases through some links.</p>
+  <p class="disclosure">
+    This site may earn a commission from qualifying purchases through some links.
+  </p>
 </footer>
 """
 
-keywords = [k.strip() for k in Path("keywords.txt").read_text(encoding="utf-8").splitlines() if k.strip()]
+keywords = [
+    k.strip()
+    for k in Path("keywords.txt").read_text(encoding="utf-8").splitlines()
+    if k.strip()
+]
+
 keyword = random.choice(keywords)
+
 
 def slugify(text):
     text = text.lower()
     text = re.sub(r"[^a-z0-9]+", "-", text)
     return text.strip("-")
+
 
 slug = slugify(keyword)
 file = POSTS / f"{slug}.html"
@@ -85,7 +100,8 @@ Requirements:
 - Do not use markdown.
 - Return only valid HTML sections that go inside an <article>.
 - Use h2, h3, p, ul, li.
-- Include introduction, why it matters, practical advice, mistakes to avoid, simple weekly plan or buying guide, and FAQ with 3 questions.
+- Include introduction, why it matters, practical advice, mistakes to avoid,
+  simple weekly plan or buying guide, and FAQ with 3 questions.
 - Around 900 to 1300 words.
 - Add no external links.
 """
@@ -105,6 +121,7 @@ article = f"""<!doctype html>
   <title>{safe_keyword} | Football Fitness Training</title>
   <meta name="description" content="Practical football guide about {safe_keyword}.">
   <link rel="stylesheet" href="../style.css">
+  {FAVICON}
   {GA}
 </head>
 <body>
@@ -138,7 +155,9 @@ posts_index = f"""<!doctype html>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Football Training Articles</title>
+  <meta name="description" content="Browse football training, fitness, recovery, nutrition and equipment articles.">
   <link rel="stylesheet" href="../style.css">
+  {FAVICON}
   {GA}
 </head>
 <body>
@@ -173,13 +192,17 @@ home = f"""<!doctype html>
   <title>Football Fitness Training</title>
   <meta name="description" content="Football training, recovery, nutrition and equipment guides.">
   <link rel="stylesheet" href="style.css">
+  {FAVICON}
   {GA}
 </head>
 <body>
   <header>
     {NAV_ROOT}
     <h1>Football Fitness Training</h1>
-    <p>Improve your football performance with practical guides about speed, strength, recovery, nutrition and equipment.</p>
+    <p>
+      Improve your football performance with practical guides about speed,
+      strength, recovery, nutrition and equipment.
+    </p>
   </header>
 
   <main>
@@ -217,8 +240,10 @@ for p in sorted(post_files):
 
 sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n'
 sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+
 for url in sitemap_urls:
     sitemap += f"  <url><loc>{url}</loc></url>\n"
+
 sitemap += "</urlset>\n"
 
 Path("sitemap.xml").write_text(sitemap, encoding="utf-8")
