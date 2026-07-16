@@ -102,6 +102,96 @@ def article_meta_description(topic):
     return description[:155].rstrip()
 
 
+
+STOP_WORDS = {
+    "a", "an", "and", "for", "from", "how", "in", "of", "on", "the",
+    "to", "with", "football", "player", "players"
+}
+
+
+def topic_tokens(text):
+    return {
+        token
+        for token in re.findall(r"[a-z0-9]+", text.lower())
+        if token not in STOP_WORDS and len(token) > 2
+    }
+
+
+def related_posts_for(current_post, all_posts, limit=5):
+    current_tokens = topic_tokens(current_post.stem.replace("-", " "))
+    ranked = []
+
+    for candidate in all_posts:
+        if candidate == current_post:
+            continue
+
+        candidate_tokens = topic_tokens(candidate.stem.replace("-", " "))
+        overlap = len(current_tokens & candidate_tokens)
+
+        # A small fallback score keeps the links useful even when there is
+        # no exact word overlap.
+        score = overlap * 10
+
+        if current_post.stat().st_mtime <= candidate.stat().st_mtime:
+            score += 1
+
+        ranked.append((score, candidate.name, candidate))
+
+    ranked.sort(key=lambda item: (-item[0], item[1]))
+    return [item[2] for item in ranked[:limit]]
+
+
+def related_links_html(current_post, all_posts):
+    related = related_posts_for(current_post, all_posts)
+
+    if not related:
+        return ""
+
+    items = []
+    for post in related:
+        title = html.escape(post.stem.replace("-", " "))
+        items.append(f'        <li><a href="{post.name}">{title}</a></li>')
+
+    return (
+        "\n      <!-- RELATED-START -->\n"
+        "      <section class=\"related-articles\">\n"
+        "        <h2>Related football guides</h2>\n"
+        "        <ul>\n"
+        + "\n".join(items)
+        + "\n        </ul>\n"
+        "      </section>\n"
+        "      <!-- RELATED-END -->\n"
+    )
+
+
+def update_internal_links(all_posts):
+    pattern = re.compile(
+        r"\n?\s*<!-- RELATED-START -->.*?<!-- RELATED-END -->\s*\n?",
+        flags=re.DOTALL,
+    )
+
+    updated = 0
+
+    for post in all_posts:
+        page = post.read_text(encoding="utf-8")
+        page_without_old_block = pattern.sub("\n", page)
+        related_block = related_links_html(post, all_posts)
+
+        if not related_block or "</article>" not in page_without_old_block:
+            continue
+
+        new_page = page_without_old_block.replace(
+            "</article>",
+            f"{related_block}    </article>",
+            1,
+        )
+
+        if new_page != page:
+            post.write_text(new_page, encoding="utf-8")
+            updated += 1
+
+    return updated
+
 keywords_file = Path("keywords.txt")
 
 keywords = [
@@ -278,6 +368,15 @@ article = f"""<!doctype html>
 
 file.write_text(article, encoding="utf-8")
 
+post_files = sorted(
+    [p for p in POSTS.glob("*.html") if p.name != "index.html"],
+    key=lambda p: p.stat().st_mtime,
+    reverse=True,
+)
+
+updated_internal_links = update_internal_links(post_files)
+
+# Re-sort after updating the article files.
 post_files = sorted(
     [p for p in POSTS.glob("*.html") if p.name != "index.html"],
     key=lambda p: p.stat().st_mtime,
@@ -479,3 +578,4 @@ print(f"Generated AI article: {file}")
 print(f"Used keyword removed: {keyword}")
 print(f"Skipped already-published keywords: {len(skipped_existing)}")
 print(f"Keywords remaining: {len(remaining_keywords)}")
+print(f"Articles updated with internal links: {updated_internal_links}")
