@@ -3,6 +3,8 @@ import re
 import html
 import os
 import json
+import csv
+from datetime import datetime, timezone
 from openai import OpenAI
 
 SITE = "https://borkorobko.github.io/auto-blog"
@@ -192,43 +194,118 @@ def update_internal_links(all_posts):
 
     return updated
 
-keywords_file = Path("keywords.txt")
-
-keywords = [
-    line.strip()
-    for line in keywords_file.read_text(encoding="utf-8").splitlines()
-    if line.strip()
+CONTENT_PLAN_FILE = Path("content_plan.csv")
+CONTENT_PLAN_FIELDS = [
+    "Title",
+    "Category",
+    "Cluster",
+    "Intent",
+    "Priority",
+    "Status",
+    "PublishedDate",
+    "Slug",
 ]
 
-if not keywords:
-    raise RuntimeError("No keywords left in keywords.txt")
 
-# Use the first keyword that does not already have a published article.
-skipped_existing = []
-keyword = None
+def normalize_status(value):
+    return (value or "").strip().lower()
 
-for candidate in keywords:
-    candidate_slug = slugify(candidate)
 
-    if candidate_slug and (POSTS / f"{candidate_slug}.html").exists():
-        skipped_existing.append(candidate)
+def priority_value(row):
+    try:
+        return int((row.get("Priority") or "999").strip())
+    except ValueError:
+        return 999
+
+
+def load_content_plan():
+    if not CONTENT_PLAN_FILE.exists():
+        raise RuntimeError(
+            "content_plan.csv was not found. Add it to the repository root."
+        )
+
+    with CONTENT_PLAN_FILE.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        rows = list(reader)
+
+    if not rows:
+        raise RuntimeError("content_plan.csv is empty.")
+
+    missing_fields = [
+        field for field in CONTENT_PLAN_FIELDS
+        if field not in (reader.fieldnames or [])
+    ]
+
+    if missing_fields:
+        raise RuntimeError(
+            "content_plan.csv is missing columns: "
+            + ", ".join(missing_fields)
+        )
+
+    return rows
+
+
+def save_content_plan(rows):
+    temporary_file = CONTENT_PLAN_FILE.with_suffix(".csv.tmp")
+
+    with temporary_file.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=CONTENT_PLAN_FIELDS)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    temporary_file.replace(CONTENT_PLAN_FILE)
+
+
+content_plan = load_content_plan()
+today_utc = datetime.now(timezone.utc).date().isoformat()
+
+# Mark rows as published when the matching article already exists.
+# This also makes migration from keywords.txt safe.
+existing_rows_updated = 0
+
+for row in content_plan:
+    title = (row.get("Title") or "").strip()
+    row_slug = slugify(title)
+
+    if not title or not row_slug:
         continue
 
-    keyword = candidate
-    break
+    article_file = POSTS / f"{row_slug}.html"
 
-if keyword is None:
-    keywords_file.write_text("", encoding="utf-8")
-    raise RuntimeError(
-        "All keywords in keywords.txt already have published articles. "
-        "Add new keywords before running the workflow again."
-    )
+    if article_file.exists() and normalize_status(row.get("Status")) != "published":
+        row["Status"] = "Published"
+        row["PublishedDate"] = row.get("PublishedDate") or today_utc
+        row["Slug"] = row_slug
+        existing_rows_updated += 1
 
-remaining_keywords = [
-    item
-    for item in keywords
-    if item not in skipped_existing and item != keyword
+pending_rows = [
+    (index, row)
+    for index, row in enumerate(content_plan)
+    if normalize_status(row.get("Status")) in {"", "pending"}
+    and (row.get("Title") or "").strip()
 ]
+
+pending_rows.sort(
+    key=lambda item: (
+        priority_value(item[1]),
+        item[0],
+    )
+)
+
+if not pending_rows:
+    if existing_rows_updated:
+        save_content_plan(content_plan)
+
+    print("No pending articles remain in content_plan.csv.")
+    print(f"Existing articles synchronized: {existing_rows_updated}")
+    raise SystemExit(0)
+
+selected_index, selected_row = pending_rows[0]
+
+keyword = selected_row["Title"].strip()
+category = (selected_row.get("Category") or "Football").strip()
+cluster = (selected_row.get("Cluster") or category).strip()
+intent = (selected_row.get("Intent") or "Informational").strip()
 
 slug = slugify(keyword)
 
@@ -250,6 +327,11 @@ prompt = f"""
 Write a detailed and genuinely useful football article for the keyword:
 "{keyword}"
 
+Content plan:
+- Category: {category}
+- Topic cluster: {cluster}
+- Search intent: {intent}
+
 Audience:
 - Amateur football players
 - Beginner-to-intermediate players
@@ -258,7 +340,8 @@ Audience:
 Requirements:
 - Write in clear English.
 - Aim for approximately 1000 to 1400 words.
-- Be specific to the exact keyword.
+- Be specific to the exact keyword, category, topic cluster and search intent.
+- Satisfy the stated search intent early in the article.
 - Do not write a generic article that could fit every football topic.
 - Do not invent studies, statistics, prices or professional endorsements.
 - Do not claim that a product prevents injuries.
@@ -567,15 +650,26 @@ sitemap += "</urlset>\n"
 
 Path("sitemap.xml").write_text(sitemap, encoding="utf-8")
 
-# Remove the keyword only after the article and all site files were written.
-# If the API call or generation fails, keywords.txt remains unchanged.
-keywords_file.write_text(
-    "\n".join(remaining_keywords) + ("\n" if remaining_keywords else ""),
-    encoding="utf-8",
+# Mark the selected article as published only after the article and all
+# generated site files were written successfully.
+selected_row["Status"] = "Published"
+selected_row["PublishedDate"] = today_utc
+selected_row["Slug"] = slug
+content_plan[selected_index] = selected_row
+save_content_plan(content_plan)
+
+pending_remaining = sum(
+    1
+    for row in content_plan
+    if normalize_status(row.get("Status")) in {"", "pending"}
 )
 
 print(f"Generated AI article: {file}")
-print(f"Used keyword removed: {keyword}")
-print(f"Skipped already-published keywords: {len(skipped_existing)}")
-print(f"Keywords remaining: {len(remaining_keywords)}")
+print(f"Published content-plan title: {keyword}")
+print(f"Category: {category}")
+print(f"Cluster: {cluster}")
+print(f"Intent: {intent}")
+print(f"Priority: {selected_row.get('Priority', '')}")
+print(f"Existing articles synchronized: {existing_rows_updated}")
+print(f"Pending articles remaining: {pending_remaining}")
 print(f"Articles updated with internal links: {updated_internal_links}")
