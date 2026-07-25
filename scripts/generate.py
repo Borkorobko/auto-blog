@@ -649,6 +649,7 @@ for url in sitemap_urls:
 sitemap += "</urlset>\n"
 
 Path("sitemap.xml").write_text(sitemap, encoding="utf-8")
+Path("sitemap-v2.xml").write_text(sitemap, encoding="utf-8")
 
 # Mark the selected article as published only after the article and all
 # generated site files were written successfully.
