@@ -7,7 +7,8 @@ import csv
 from datetime import datetime, timezone
 from openai import OpenAI
 
-SITE = "https://borkorobko.github.io/auto-blog"
+OLD_SITE = "https://borkorobko.github.io/auto-blog"
+SITE = "https://auto-blog-983.pages.dev"
 SITE_NAME = "Football Fitness Training"
 
 POSTS = Path("posts")
@@ -24,7 +25,7 @@ gtag('config', 'G-Y6PG5M149E');
 """
 
 FAVICON = """
-<link rel="icon" href="/auto-blog/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.ico" sizes="any">
 """
 
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -194,6 +195,64 @@ def update_internal_links(all_posts):
 
     return updated
 
+
+def migrate_existing_site_references():
+    files = [Path("index.html")]
+    files.extend(POSTS.glob("*.html"))
+    files.extend(Path("pages").glob("*.html"))
+
+    updated = 0
+    for page in files:
+        if not page.exists():
+            continue
+
+        original = page.read_text(encoding="utf-8")
+        changed = (
+            original
+            .replace(OLD_SITE, SITE)
+            .replace("/auto-blog/favicon.ico", "/favicon.ico")
+        )
+
+        if changed != original:
+            page.write_text(changed, encoding="utf-8")
+            updated += 1
+
+    return updated
+
+
+def write_sitemap_and_robots(post_files):
+    sitemap_urls = [
+        f"{SITE}/",
+        f"{SITE}/posts/index.html",
+        f"{SITE}/pages/about.html",
+        f"{SITE}/pages/contact.html",
+        f"{SITE}/pages/privacy.html",
+        f"{SITE}/pages/cookies.html",
+        f"{SITE}/pages/terms.html",
+    ]
+
+    for post in sorted(post_files):
+        sitemap_urls.append(f"{SITE}/posts/{post.name}")
+
+    sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+
+    for url in sitemap_urls:
+        sitemap += f"  <url><loc>{html.escape(url)}</loc></url>\n"
+
+    sitemap += "</urlset>\n"
+
+    Path("sitemap.xml").write_text(sitemap, encoding="utf-8")
+    Path("sitemap-v2.xml").write_text(sitemap, encoding="utf-8")
+
+    robots = (
+        "User-agent: *\n"
+        "Allow: /\n\n"
+        f"Sitemap: {SITE}/sitemap.xml\n"
+    )
+    Path("robots.txt").write_text(robots, encoding="utf-8")
+
+
 CONTENT_PLAN_FILE = Path("content_plan.csv")
 CONTENT_PLAN_FIELDS = [
     "Title",
@@ -296,8 +355,16 @@ if not pending_rows:
     if existing_rows_updated:
         save_content_plan(content_plan)
 
+    existing_post_files = sorted(
+        [p for p in POSTS.glob("*.html") if p.name != "index.html"]
+    )
+    migrated_pages = migrate_existing_site_references()
+    write_sitemap_and_robots(existing_post_files)
+
     print("No pending articles remain in content_plan.csv.")
     print(f"Existing articles synchronized: {existing_rows_updated}")
+    print(f"Existing pages migrated to Cloudflare URLs: {migrated_pages}")
+    print("Sitemap and robots.txt rebuilt.")
     raise SystemExit(0)
 
 selected_index, selected_row = pending_rows[0]
@@ -627,29 +694,8 @@ home += f"""    </ul>
 
 Path("index.html").write_text(home, encoding="utf-8")
 
-sitemap_urls = [
-    f"{SITE}/",
-    f"{SITE}/posts/index.html",
-    f"{SITE}/pages/about.html",
-    f"{SITE}/pages/contact.html",
-    f"{SITE}/pages/privacy.html",
-    f"{SITE}/pages/cookies.html",
-    f"{SITE}/pages/terms.html",
-]
-
-for post in sorted(post_files):
-    sitemap_urls.append(f"{SITE}/posts/{post.name}")
-
-sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n'
-sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-
-for url in sitemap_urls:
-    sitemap += f"  <url><loc>{html.escape(url)}</loc></url>\n"
-
-sitemap += "</urlset>\n"
-
-Path("sitemap.xml").write_text(sitemap, encoding="utf-8")
-Path("sitemap-v2.xml").write_text(sitemap, encoding="utf-8")
+migrated_pages = migrate_existing_site_references()
+write_sitemap_and_robots(post_files)
 
 # Mark the selected article as published only after the article and all
 # generated site files were written successfully.
@@ -674,3 +720,5 @@ print(f"Priority: {selected_row.get('Priority', '')}")
 print(f"Existing articles synchronized: {existing_rows_updated}")
 print(f"Pending articles remaining: {pending_remaining}")
 print(f"Articles updated with internal links: {updated_internal_links}")
+print(f"Existing pages migrated to Cloudflare URLs: {migrated_pages}")
+print("Sitemap and robots.txt rebuilt.")
