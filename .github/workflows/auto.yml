@@ -7,11 +7,9 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: auto-football-site
   cancel-in-progress: false
 
 jobs:
@@ -41,17 +39,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add posts pages index.html sitemap.xml style.css scripts templates content_plan.csv
+          git add posts pages index.html sitemap.xml sitemap-v2.xml robots.txt style.css favicon.ico scripts templates content_plan.csv
           git commit -m "Generate AI football article and update site" || echo "No changes to commit"
           git push
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: "."
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
