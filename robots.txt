@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://borkorobko.github.io/auto-blog/sitemap.xml
+Sitemap: https://auto-blog-983.pages.dev/sitemap.xml
