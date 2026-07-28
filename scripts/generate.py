@@ -245,10 +245,15 @@ def write_sitemap_and_robots(post_files):
     Path("sitemap.xml").write_text(sitemap, encoding="utf-8")
     Path("sitemap-v2.xml").write_text(sitemap, encoding="utf-8")
 
+    # Plain-text sitemap for an independent Google Search Console test.
+    text_sitemap = "\n".join(sitemap_urls) + "\n"
+    Path("sitemap.txt").write_text(text_sitemap, encoding="utf-8")
+
     robots = (
         "User-agent: *\n"
         "Allow: /\n\n"
         f"Sitemap: {SITE}/sitemap.xml\n"
+        f"Sitemap: {SITE}/sitemap.txt\n"
     )
     Path("robots.txt").write_text(robots, encoding="utf-8")
 
