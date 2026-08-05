@@ -3,12 +3,9 @@ import re
 import html
 import os
 import json
-import csv
-from datetime import datetime, timezone
 from openai import OpenAI
 
-OLD_SITE = "https://borkorobko.github.io/auto-blog"
-SITE = "https://auto-blog-983.pages.dev"
+SITE = "https://borkorobko.github.io/auto-blog"
 SITE_NAME = "Football Fitness Training"
 
 POSTS = Path("posts")
@@ -25,7 +22,7 @@ gtag('config', 'G-Y6PG5M149E');
 """
 
 FAVICON = """
-<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/auto-blog/favicon.ico" sizes="any">
 """
 
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -105,279 +102,43 @@ def article_meta_description(topic):
     return description[:155].rstrip()
 
 
+keywords_file = Path("keywords.txt")
 
-STOP_WORDS = {
-    "a", "an", "and", "for", "from", "how", "in", "of", "on", "the",
-    "to", "with", "football", "player", "players"
-}
-
-
-def topic_tokens(text):
-    return {
-        token
-        for token in re.findall(r"[a-z0-9]+", text.lower())
-        if token not in STOP_WORDS and len(token) > 2
-    }
-
-
-def related_posts_for(current_post, all_posts, limit=5):
-    current_tokens = topic_tokens(current_post.stem.replace("-", " "))
-    ranked = []
-
-    for candidate in all_posts:
-        if candidate == current_post:
-            continue
-
-        candidate_tokens = topic_tokens(candidate.stem.replace("-", " "))
-        overlap = len(current_tokens & candidate_tokens)
-
-        # A small fallback score keeps the links useful even when there is
-        # no exact word overlap.
-        score = overlap * 10
-
-        if current_post.stat().st_mtime <= candidate.stat().st_mtime:
-            score += 1
-
-        ranked.append((score, candidate.name, candidate))
-
-    ranked.sort(key=lambda item: (-item[0], item[1]))
-    return [item[2] for item in ranked[:limit]]
-
-
-def related_links_html(current_post, all_posts):
-    related = related_posts_for(current_post, all_posts)
-
-    if not related:
-        return ""
-
-    items = []
-    for post in related:
-        title = html.escape(post.stem.replace("-", " "))
-        items.append(f'        <li><a href="{post.name}">{title}</a></li>')
-
-    return (
-        "\n      <!-- RELATED-START -->\n"
-        "      <section class=\"related-articles\">\n"
-        "        <h2>Related football guides</h2>\n"
-        "        <ul>\n"
-        + "\n".join(items)
-        + "\n        </ul>\n"
-        "      </section>\n"
-        "      <!-- RELATED-END -->\n"
-    )
-
-
-def update_internal_links(all_posts):
-    pattern = re.compile(
-        r"\n?\s*<!-- RELATED-START -->.*?<!-- RELATED-END -->\s*\n?",
-        flags=re.DOTALL,
-    )
-
-    updated = 0
-
-    for post in all_posts:
-        page = post.read_text(encoding="utf-8")
-        page_without_old_block = pattern.sub("\n", page)
-        related_block = related_links_html(post, all_posts)
-
-        if not related_block or "</article>" not in page_without_old_block:
-            continue
-
-        new_page = page_without_old_block.replace(
-            "</article>",
-            f"{related_block}    </article>",
-            1,
-        )
-
-        if new_page != page:
-            post.write_text(new_page, encoding="utf-8")
-            updated += 1
-
-    return updated
-
-
-def migrate_existing_site_references():
-    files = [Path("index.html")]
-    files.extend(POSTS.glob("*.html"))
-    files.extend(Path("pages").glob("*.html"))
-
-    updated = 0
-    for page in files:
-        if not page.exists():
-            continue
-
-        original = page.read_text(encoding="utf-8")
-        changed = (
-            original
-            .replace(OLD_SITE, SITE)
-            .replace("/auto-blog/favicon.ico", "/favicon.ico")
-        )
-
-        if changed != original:
-            page.write_text(changed, encoding="utf-8")
-            updated += 1
-
-    return updated
-
-
-def write_sitemap_and_robots(post_files):
-    sitemap_urls = [
-        f"{SITE}/",
-        f"{SITE}/posts/index.html",
-        f"{SITE}/pages/about.html",
-        f"{SITE}/pages/contact.html",
-        f"{SITE}/pages/privacy.html",
-        f"{SITE}/pages/cookies.html",
-        f"{SITE}/pages/terms.html",
-    ]
-
-    for post in sorted(post_files):
-        sitemap_urls.append(f"{SITE}/posts/{post.name}")
-
-    sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n'
-    sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-
-    for url in sitemap_urls:
-        sitemap += f"  <url><loc>{html.escape(url)}</loc></url>\n"
-
-    sitemap += "</urlset>\n"
-
-    Path("sitemap.xml").write_text(sitemap, encoding="utf-8")
-    Path("sitemap-v2.xml").write_text(sitemap, encoding="utf-8")
-
-    # Plain-text sitemap for an independent Google Search Console test.
-    text_sitemap = "\n".join(sitemap_urls) + "\n"
-    Path("sitemap.txt").write_text(text_sitemap, encoding="utf-8")
-
-    robots = (
-        "User-agent: *\n"
-        "Allow: /\n\n"
-        f"Sitemap: {SITE}/sitemap.xml\n"
-        f"Sitemap: {SITE}/sitemap.txt\n"
-    )
-    Path("robots.txt").write_text(robots, encoding="utf-8")
-
-
-CONTENT_PLAN_FILE = Path("content_plan.csv")
-CONTENT_PLAN_FIELDS = [
-    "Title",
-    "Category",
-    "Cluster",
-    "Intent",
-    "Priority",
-    "Status",
-    "PublishedDate",
-    "Slug",
+keywords = [
+    line.strip()
+    for line in keywords_file.read_text(encoding="utf-8").splitlines()
+    if line.strip()
 ]
 
+if not keywords:
+    raise RuntimeError("No keywords left in keywords.txt")
 
-def normalize_status(value):
-    return (value or "").strip().lower()
+# Use the first keyword that does not already have a published article.
+skipped_existing = []
+keyword = None
 
+for candidate in keywords:
+    candidate_slug = slugify(candidate)
 
-def priority_value(row):
-    try:
-        return int((row.get("Priority") or "999").strip())
-    except ValueError:
-        return 999
-
-
-def load_content_plan():
-    if not CONTENT_PLAN_FILE.exists():
-        raise RuntimeError(
-            "content_plan.csv was not found. Add it to the repository root."
-        )
-
-    with CONTENT_PLAN_FILE.open("r", encoding="utf-8-sig", newline="") as handle:
-        reader = csv.DictReader(handle)
-        rows = list(reader)
-
-    if not rows:
-        raise RuntimeError("content_plan.csv is empty.")
-
-    missing_fields = [
-        field for field in CONTENT_PLAN_FIELDS
-        if field not in (reader.fieldnames or [])
-    ]
-
-    if missing_fields:
-        raise RuntimeError(
-            "content_plan.csv is missing columns: "
-            + ", ".join(missing_fields)
-        )
-
-    return rows
-
-
-def save_content_plan(rows):
-    temporary_file = CONTENT_PLAN_FILE.with_suffix(".csv.tmp")
-
-    with temporary_file.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=CONTENT_PLAN_FIELDS)
-        writer.writeheader()
-        writer.writerows(rows)
-
-    temporary_file.replace(CONTENT_PLAN_FILE)
-
-
-content_plan = load_content_plan()
-today_utc = datetime.now(timezone.utc).date().isoformat()
-
-# Mark rows as published when the matching article already exists.
-# This also makes migration from keywords.txt safe.
-existing_rows_updated = 0
-
-for row in content_plan:
-    title = (row.get("Title") or "").strip()
-    row_slug = slugify(title)
-
-    if not title or not row_slug:
+    if candidate_slug and (POSTS / f"{candidate_slug}.html").exists():
+        skipped_existing.append(candidate)
         continue
 
-    article_file = POSTS / f"{row_slug}.html"
+    keyword = candidate
+    break
 
-    if article_file.exists() and normalize_status(row.get("Status")) != "published":
-        row["Status"] = "Published"
-        row["PublishedDate"] = row.get("PublishedDate") or today_utc
-        row["Slug"] = row_slug
-        existing_rows_updated += 1
+if keyword is None:
+    keywords_file.write_text("", encoding="utf-8")
+    raise RuntimeError(
+        "All keywords in keywords.txt already have published articles. "
+        "Add new keywords before running the workflow again."
+    )
 
-pending_rows = [
-    (index, row)
-    for index, row in enumerate(content_plan)
-    if normalize_status(row.get("Status")) in {"", "pending"}
-    and (row.get("Title") or "").strip()
+remaining_keywords = [
+    item
+    for item in keywords
+    if item not in skipped_existing and item != keyword
 ]
-
-pending_rows.sort(
-    key=lambda item: (
-        priority_value(item[1]),
-        item[0],
-    )
-)
-
-if not pending_rows:
-    if existing_rows_updated:
-        save_content_plan(content_plan)
-
-    existing_post_files = sorted(
-        [p for p in POSTS.glob("*.html") if p.name != "index.html"]
-    )
-    migrated_pages = migrate_existing_site_references()
-    write_sitemap_and_robots(existing_post_files)
-
-    print("No pending articles remain in content_plan.csv.")
-    print(f"Existing articles synchronized: {existing_rows_updated}")
-    print(f"Existing pages migrated to Cloudflare URLs: {migrated_pages}")
-    print("Sitemap and robots.txt rebuilt.")
-    raise SystemExit(0)
-
-selected_index, selected_row = pending_rows[0]
-
-keyword = selected_row["Title"].strip()
-category = (selected_row.get("Category") or "Football").strip()
-cluster = (selected_row.get("Cluster") or category).strip()
-intent = (selected_row.get("Intent") or "Informational").strip()
 
 slug = slugify(keyword)
 
@@ -399,11 +160,6 @@ prompt = f"""
 Write a detailed and genuinely useful football article for the keyword:
 "{keyword}"
 
-Content plan:
-- Category: {category}
-- Topic cluster: {cluster}
-- Search intent: {intent}
-
 Audience:
 - Amateur football players
 - Beginner-to-intermediate players
@@ -412,8 +168,7 @@ Audience:
 Requirements:
 - Write in clear English.
 - Aim for approximately 1000 to 1400 words.
-- Be specific to the exact keyword, category, topic cluster and search intent.
-- Satisfy the stated search intent early in the article.
+- Be specific to the exact keyword.
 - Do not write a generic article that could fit every football topic.
 - Do not invent studies, statistics, prices or professional endorsements.
 - Do not claim that a product prevents injuries.
@@ -523,15 +278,6 @@ article = f"""<!doctype html>
 
 file.write_text(article, encoding="utf-8")
 
-post_files = sorted(
-    [p for p in POSTS.glob("*.html") if p.name != "index.html"],
-    key=lambda p: p.stat().st_mtime,
-    reverse=True,
-)
-
-updated_internal_links = update_internal_links(post_files)
-
-# Re-sort after updating the article files.
 post_files = sorted(
     [p for p in POSTS.glob("*.html") if p.name != "index.html"],
     key=lambda p: p.stat().st_mtime,
@@ -699,31 +445,37 @@ home += f"""    </ul>
 
 Path("index.html").write_text(home, encoding="utf-8")
 
-migrated_pages = migrate_existing_site_references()
-write_sitemap_and_robots(post_files)
+sitemap_urls = [
+    f"{SITE}/",
+    f"{SITE}/posts/index.html",
+    f"{SITE}/pages/about.html",
+    f"{SITE}/pages/contact.html",
+    f"{SITE}/pages/privacy.html",
+    f"{SITE}/pages/cookies.html",
+    f"{SITE}/pages/terms.html",
+]
 
-# Mark the selected article as published only after the article and all
-# generated site files were written successfully.
-selected_row["Status"] = "Published"
-selected_row["PublishedDate"] = today_utc
-selected_row["Slug"] = slug
-content_plan[selected_index] = selected_row
-save_content_plan(content_plan)
+for post in sorted(post_files):
+    sitemap_urls.append(f"{SITE}/posts/{post.name}")
 
-pending_remaining = sum(
-    1
-    for row in content_plan
-    if normalize_status(row.get("Status")) in {"", "pending"}
+sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n'
+sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+
+for url in sitemap_urls:
+    sitemap += f"  <url><loc>{html.escape(url)}</loc></url>\n"
+
+sitemap += "</urlset>\n"
+
+Path("sitemap.xml").write_text(sitemap, encoding="utf-8")
+
+# Remove the keyword only after the article and all site files were written.
+# If the API call or generation fails, keywords.txt remains unchanged.
+keywords_file.write_text(
+    "\n".join(remaining_keywords) + ("\n" if remaining_keywords else ""),
+    encoding="utf-8",
 )
 
 print(f"Generated AI article: {file}")
-print(f"Published content-plan title: {keyword}")
-print(f"Category: {category}")
-print(f"Cluster: {cluster}")
-print(f"Intent: {intent}")
-print(f"Priority: {selected_row.get('Priority', '')}")
-print(f"Existing articles synchronized: {existing_rows_updated}")
-print(f"Pending articles remaining: {pending_remaining}")
-print(f"Articles updated with internal links: {updated_internal_links}")
-print(f"Existing pages migrated to Cloudflare URLs: {migrated_pages}")
-print("Sitemap and robots.txt rebuilt.")
+print(f"Used keyword removed: {keyword}")
+print(f"Skipped already-published keywords: {len(skipped_existing)}")
+print(f"Keywords remaining: {len(remaining_keywords)}")
