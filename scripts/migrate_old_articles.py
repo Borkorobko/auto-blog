@@ -424,6 +424,14 @@ def migrate_article(post: Path, dry_run: bool = False) -> str:
 
     if not description:
         description = f"Practical football guide about {title} for developing players."
+    # Very old placeholder pages may not contain an <article> wrapper.
+    # Leave them untouched instead of failing the whole migration.
+    if not re.search(r"<article[^>]*>.*?</article>", original, flags=re.I | re.S):
+        return (
+            f"SKIPPED: {post.name} has no <article> wrapper; "
+            "legacy placeholder left unchanged for a later content rewrite."
+        )
+
 
     article_body = extract_article_html(original)
     article_body, related_block = extract_related_block(article_body)
