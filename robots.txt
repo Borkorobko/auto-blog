@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://auto-blog-983.pages.dev/sitemap.xml
-Sitemap: https://auto-blog-983.pages.dev/sitemap.txt
+Sitemap: https://footballtraininglab.com/sitemap.xml
