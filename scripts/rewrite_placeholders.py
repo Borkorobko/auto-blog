@@ -18,7 +18,6 @@ from migrate_old_articles import (
 )
 
 DEFAULT_TEST_ARTICLE = "agility-drills-football.html"
-client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 
 def clean_ai_html(text: str) -> str:
@@ -207,6 +206,7 @@ def rewrite(post: Path, dry_run: bool = False) -> str:
             f"  URL preserved: {SITE}/posts/{post.name}"
         )
 
+    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
     response = client.responses.create(
         model="gpt-4.1-mini",
         input=prompt_for(title, category, notes),
