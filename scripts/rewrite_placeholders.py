@@ -46,6 +46,15 @@ def legacy_text(page: str) -> str:
 
 def normal_title(page: str, fallback: str) -> str:
     title = extract_title(page, fallback).strip()
+
+    # Many legacy slugs were written like "agility-drills-football".
+    # Turn those into natural English: "Football Agility Drills".
+    stem_words = fallback.replace(".html", "").split("-")
+    if stem_words and stem_words[-1].lower() == "football":
+        core = " ".join(stem_words[:-1]).strip()
+        if core:
+            return f"Football {core.title()}"
+
     if title and title == title.lower():
         title = title.title()
     return title
@@ -78,6 +87,9 @@ Useful text from the old placeholder page:
 {notes or "(No useful legacy text beyond the topic.)"}
 
 Requirements:
+- IMPORTANT: "football" always means association football / soccer, never American football.
+- Use association-football terminology such as goalkeeper, centre-back, full-back, midfielder, winger and striker.
+- Never use American-football positions or concepts such as quarterback, receiver, defensive back, linebacker, running back, touchdown or NFL.
 - Write in clear English.
 - Aim for about 1100 to 1500 words.
 - Answer the search intent immediately.
@@ -110,6 +122,26 @@ For equipment topics:
 
 
 def validate(body: str) -> None:
+    plain = strip_tags(body).lower()
+
+    banned_terms = [
+        "quarterback",
+        "wide receiver",
+        "receivers",
+        "defensive back",
+        "defensive backs",
+        "linebacker",
+        "linebackers",
+        "running back",
+        "touchdown",
+        "nfl",
+    ]
+    found = [term for term in banned_terms if term in plain]
+    if found:
+        raise RuntimeError(
+            "American-football terminology detected: " + ", ".join(found)
+        )
+
     h2 = [strip_tags(x).lower() for x in re.findall(r"<h2[^>]*>(.*?)</h2>", body, flags=re.I | re.S)]
     if len(h2) < 5:
         raise RuntimeError(f"Generated article has only {len(h2)} H2 sections.")
@@ -132,7 +164,7 @@ def validate(body: str) -> None:
         raise RuntimeError(f"Expected 3 FAQ items, found {len(pairs)}.")
 
 
-def related_block(current: Path) -> str:
+def related_block(current: Path, current_category: str) -> str:
     stop = {"a","an","and","for","from","how","in","of","on","the","to","with","football","player","players"}
 
     def tokens(path: Path) -> set[str]:
@@ -153,12 +185,16 @@ def related_block(current: Path) -> str:
             continue
         if 'class="article-shell"' not in page:
             continue
-        ranked.append((len(current_tokens & tokens(candidate)), candidate.name, candidate, page))
+        candidate_title = extract_title(page, candidate.stem)
+        candidate_category = infer_category(candidate_title)
+        overlap = len(current_tokens & tokens(candidate))
+        same_category = 1 if candidate_category == current_category else 0
+        ranked.append((same_category, overlap, candidate.name, candidate, page))
 
-    ranked.sort(key=lambda x: (-x[0], x[1]))
+    ranked.sort(key=lambda x: (-x[0], -x[1], x[2]))
     cards = []
 
-    for _, _, candidate, page in ranked[:4]:
+    for _, _, _, candidate, page in ranked[:4]:
         title = extract_title(page, candidate.stem)
         cards.append(
             f'<a class="related-card" href="{html.escape(candidate.name)}">'
@@ -180,16 +216,16 @@ def related_block(current: Path) -> str:
     )
 
 
-def rewrite(post: Path, dry_run: bool = False) -> str:
+def rewrite(post: Path, dry_run: bool = False, force: bool = False) -> str:
     if not post.exists():
         return f"ERROR: {post.name} does not exist."
 
     original = post.read_text(encoding="utf-8")
 
-    if 'class="article-shell"' in original:
+    if 'class="article-shell"' in original and not force:
         return f"SKIPPED: {post.name} is already modern."
 
-    if not is_placeholder(original):
+    if not is_placeholder(original) and not force:
         return f"SKIPPED: {post.name} is not a placeholder."
 
     title = normal_title(original, post.stem)
@@ -207,14 +243,27 @@ def rewrite(post: Path, dry_run: bool = False) -> str:
         )
 
     client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-    response = client.responses.create(
-        model="gpt-4.1-mini",
-        input=prompt_for(title, category, notes),
-    )
-    body = clean_ai_html(response.output_text)
-    validate(body)
 
-    related = related_block(post)
+    body = ""
+    last_error = None
+    for attempt in range(1, 4):
+        response = client.responses.create(
+            model="gpt-4.1-mini",
+            input=prompt_for(title, category, notes),
+        )
+        body = clean_ai_html(response.output_text)
+        try:
+            validate(body)
+            last_error = None
+            break
+        except Exception as exc:
+            last_error = exc
+            print(f"Validation failed on attempt {attempt}: {exc}")
+
+    if last_error is not None:
+        raise RuntimeError(f"Article validation failed after 3 attempts: {last_error}")
+
+    related = related_block(post, category)
     intermediate = f'''<!doctype html>
 <html lang="en">
 <head>
@@ -254,6 +303,7 @@ def main() -> None:
     group.add_argument("--file")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument("--force", action="store_true", help="Rewrite even if the selected file is already modern.")
     args = parser.parse_args()
 
     if args.all:
@@ -281,7 +331,7 @@ def main() -> None:
 
     for post in targets:
         try:
-            result = rewrite(post, dry_run=args.dry_run)
+            result = rewrite(post, dry_run=args.dry_run, force=args.force)
             print(result)
             print()
             if result.startswith("REWRITTEN:"):

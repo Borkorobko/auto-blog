@@ -30,23 +30,23 @@ jobs:
       - name: Install dependencies
         run: python -m pip install --upgrade pip openai
 
-      - name: Dry-run placeholder rewrite
-        run: python scripts/rewrite_placeholders.py --file agility-drills-football.html --dry-run
+      - name: Dry-run corrected agility article
+        run: python scripts/rewrite_placeholders.py --file agility-drills-football.html --dry-run --force
 
-      - name: Rewrite test placeholder
+      - name: Rewrite corrected agility article
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: python scripts/rewrite_placeholders.py --file agility-drills-football.html
+        run: python scripts/rewrite_placeholders.py --file agility-drills-football.html --force
 
       - name: Show changed files
         run: git status --short
 
-      - name: Commit rewritten article
+      - name: Commit corrected article
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add posts/agility-drills-football.html images/agility-drills-football.svg
-          git commit -m "Rewrite agility drills placeholder" || echo "No changes to commit"
+          git commit -m "Improve agility drills article" || echo "No changes to commit"
           git push origin HEAD:main
 
       - name: Configure Pages
