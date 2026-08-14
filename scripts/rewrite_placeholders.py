@@ -170,11 +170,37 @@ def related_block(current: Path, current_category: str) -> str:
         "football","player","players","best","guide"
     }
 
+    topic_groups = {
+        "training": {
+            "agility","agile","speed","sprint","sprinting","acceleration","accelerate",
+            "drill","drills","training","workout","workouts","exercise","exercises",
+            "conditioning","stamina","endurance","strength","plyometric","plyometrics",
+            "footwork","quickness","technique","running","run","fitness"
+        },
+        "equipment": {
+            "boot","boots","shoe","shoes","cleat","cleats","sock","socks","backpack",
+            "bag","ball","balls","cone","cones","ladder","ladders","equipment","gear",
+            "shin","guard","guards","jersey","glove","gloves"
+        },
+        "nutrition": {
+            "nutrition","nutritional","protein","creatine","meal","meals","eat","eating",
+            "food","foods","hydration","hydrate","recovery","recover","supplement",
+            "supplements","carbs","carbohydrate","carbohydrates"
+        },
+    }
+
     def tokens(path: Path) -> set[str]:
         return {
             x for x in re.findall(r"[a-z0-9]+", path.stem.lower())
             if x not in stop and len(x) > 2
         }
+
+    def groups_for(token_set: set[str]) -> set[str]:
+        groups = set()
+        for group_name, keywords in topic_groups.items():
+            if token_set & keywords:
+                groups.add(group_name)
+        return groups
 
     def display_title(page: str, candidate: Path) -> str:
         title = extract_title(page, candidate.stem).strip()
@@ -183,8 +209,8 @@ def related_block(current: Path, current_category: str) -> str:
         return title
 
     current_tokens = tokens(current)
-    same_category = []
-    fallback = []
+    current_groups = groups_for(current_tokens)
+    ranked = []
 
     for candidate in POSTS.glob("*.html"):
         if candidate == current or candidate.name == "index.html":
@@ -198,30 +224,33 @@ def related_block(current: Path, current_category: str) -> str:
         if 'class="article-shell"' not in page:
             continue
 
+        candidate_tokens = tokens(candidate)
+        candidate_groups = groups_for(candidate_tokens)
+
+        direct_overlap = len(current_tokens & candidate_tokens)
+        shared_groups = len(current_groups & candidate_groups)
+
         candidate_title = extract_title(page, candidate.stem)
         candidate_category = infer_category(candidate_title)
-        overlap = len(current_tokens & tokens(candidate))
+        same_category = 1 if candidate_category == current_category else 0
 
-        item = (overlap, candidate.name, candidate, page)
+        # A guide must be directly related by keyword OR share a real topic family.
+        # Same broad category alone is not enough.
+        if direct_overlap == 0 and shared_groups == 0:
+            continue
 
-        if candidate_category == current_category:
-            same_category.append(item)
-        elif overlap > 0:
-            fallback.append(item)
+        # Strongly prefer direct topic overlap, then shared topic family.
+        score = direct_overlap * 10 + shared_groups * 4 + same_category
 
-    # Relevance first. Do NOT pad the block with unrelated articles just to reach 4 cards.
-    same_category.sort(key=lambda x: (-x[0], x[1]))
-    fallback.sort(key=lambda x: (-x[0], x[1]))
+        ranked.append(
+            (score, direct_overlap, shared_groups, candidate.name, candidate, page)
+        )
 
-    chosen = same_category[:4]
-
-    # Only use another category when there are zero same-category guides,
-    # and even then require a direct keyword overlap.
-    if not chosen:
-        chosen = fallback[:4]
+    ranked.sort(key=lambda x: (-x[0], -x[1], -x[2], x[3]))
+    chosen = ranked[:4]
 
     cards = []
-    for _, _, candidate, page in chosen:
+    for _, _, _, _, candidate, page in chosen:
         title = display_title(page, candidate)
         cards.append(
             f'<a class="related-card" href="{html.escape(candidate.name)}">'
@@ -241,7 +270,6 @@ def related_block(current: Path, current_category: str) -> str:
         + '\n</div>\n</section>\n'
         '<!-- RELATED-END -->'
     )
-
 
 def refresh_related(post: Path, dry_run: bool = False) -> str:
     if not post.exists():
