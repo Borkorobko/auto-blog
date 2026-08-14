@@ -165,7 +165,10 @@ def validate(body: str) -> None:
 
 
 def related_block(current: Path, current_category: str) -> str:
-    stop = {"a","an","and","for","from","how","in","of","on","the","to","with","football","player","players"}
+    stop = {
+        "a","an","and","for","from","how","in","of","on","the","to","with",
+        "football","player","players","best","guide"
+    }
 
     def tokens(path: Path) -> set[str]:
         return {
@@ -173,29 +176,53 @@ def related_block(current: Path, current_category: str) -> str:
             if x not in stop and len(x) > 2
         }
 
+    def display_title(page: str, candidate: Path) -> str:
+        title = extract_title(page, candidate.stem).strip()
+        if title and title == title.lower():
+            title = title.title()
+        return title
+
     current_tokens = tokens(current)
-    ranked = []
+    same_category = []
+    fallback = []
 
     for candidate in POSTS.glob("*.html"):
         if candidate == current or candidate.name == "index.html":
             continue
+
         try:
             page = candidate.read_text(encoding="utf-8")
         except Exception:
             continue
+
         if 'class="article-shell"' not in page:
             continue
+
         candidate_title = extract_title(page, candidate.stem)
         candidate_category = infer_category(candidate_title)
         overlap = len(current_tokens & tokens(candidate))
-        same_category = 1 if candidate_category == current_category else 0
-        ranked.append((same_category, overlap, candidate.name, candidate, page))
 
-    ranked.sort(key=lambda x: (-x[0], -x[1], x[2]))
+        item = (overlap, candidate.name, candidate, page)
+
+        if candidate_category == current_category:
+            same_category.append(item)
+        elif overlap > 0:
+            fallback.append(item)
+
+    # Relevance first. Do NOT pad the block with unrelated articles just to reach 4 cards.
+    same_category.sort(key=lambda x: (-x[0], x[1]))
+    fallback.sort(key=lambda x: (-x[0], x[1]))
+
+    chosen = same_category[:4]
+
+    # Only use another category when there are zero same-category guides,
+    # and even then require a direct keyword overlap.
+    if not chosen:
+        chosen = fallback[:4]
+
     cards = []
-
-    for _, _, _, candidate, page in ranked[:4]:
-        title = extract_title(page, candidate.stem)
+    for _, _, candidate, page in chosen:
+        title = display_title(page, candidate)
         cards.append(
             f'<a class="related-card" href="{html.escape(candidate.name)}">'
             f'<strong>{html.escape(title)}</strong><span>Read guide →</span></a>'
@@ -216,9 +243,56 @@ def related_block(current: Path, current_category: str) -> str:
     )
 
 
-def rewrite(post: Path, dry_run: bool = False, force: bool = False) -> str:
+def refresh_related(post: Path, dry_run: bool = False) -> str:
     if not post.exists():
         return f"ERROR: {post.name} does not exist."
+
+    page = post.read_text(encoding="utf-8")
+
+    if 'class="article-shell"' not in page:
+        return f"SKIPPED: {post.name} is not a modern article."
+
+    title = extract_title(page, post.stem).strip()
+    category = infer_category(title)
+    new_block = related_block(post, category)
+
+    pattern = re.compile(
+        r"<!-- RELATED-START -->.*?<!-- RELATED-END -->",
+        flags=re.I | re.S,
+    )
+    match = pattern.search(page)
+
+    if not match:
+        return f"SKIPPED: {post.name} has no managed related block."
+
+    if dry_run:
+        card_count = new_block.count('class="related-card"')
+        return (
+            f"DRY RUN RELATED OK: {post.name}\n"
+            f"  Category: {category}\n"
+            f"  Related cards selected: {card_count}"
+        )
+
+    updated = page[:match.start()] + new_block + page[match.end():]
+
+    if updated == page:
+        return f"RELATED UNCHANGED: {post.name}"
+
+    post.write_text(updated, encoding="utf-8")
+    card_count = new_block.count('class="related-card"')
+    return (
+        f"RELATED UPDATED: {post.name}\n"
+        f"  Category: {category}\n"
+        f"  Related cards selected: {card_count}"
+    )
+
+
+def rewrite(post: Path, dry_run: bool = False, force: bool = False, related_only: bool = False) -> str:
+    if not post.exists():
+        return f"ERROR: {post.name} does not exist."
+
+    if related_only:
+        return refresh_related(post, dry_run=dry_run)
 
     original = post.read_text(encoding="utf-8")
 
@@ -304,6 +378,7 @@ def main() -> None:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--force", action="store_true", help="Rewrite even if the selected file is already modern.")
+    parser.add_argument("--related-only", action="store_true", help="Refresh only the Related football guides block; do not regenerate article content.")
     args = parser.parse_args()
 
     if args.all:
@@ -331,10 +406,10 @@ def main() -> None:
 
     for post in targets:
         try:
-            result = rewrite(post, dry_run=args.dry_run, force=args.force)
+            result = rewrite(post, dry_run=args.dry_run, force=args.force, related_only=args.related_only)
             print(result)
             print()
-            if result.startswith("REWRITTEN:"):
+            if result.startswith("REWRITTEN:") or result.startswith("RELATED UPDATED:"):
                 rewritten += 1
             elif result.startswith("SKIPPED:"):
                 skipped += 1
