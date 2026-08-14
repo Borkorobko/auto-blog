@@ -418,8 +418,16 @@ def main() -> None:
                 page = post.read_text(encoding="utf-8")
             except Exception:
                 continue
-            if is_placeholder(page):
-                targets.append(post)
+
+            if args.related_only:
+                # Refresh links only on already-modern articles.
+                if 'class="article-shell"' in page:
+                    targets.append(post)
+            else:
+                # Rewrite only legacy placeholder articles.
+                if is_placeholder(page):
+                    targets.append(post)
+
         if args.limit > 0:
             targets = targets[:args.limit]
     else:

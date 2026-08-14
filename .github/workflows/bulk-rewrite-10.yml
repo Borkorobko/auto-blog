@@ -1,0 +1,88 @@
+name: Bulk Rewrite - 10 Articles
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: bulk-placeholder-rewrite
+  cancel-in-progress: false
+
+jobs:
+  bulk-rewrite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip openai
+
+      - name: Preview next 10 placeholders
+        run: python scripts/rewrite_placeholders.py --all --limit 10 --dry-run
+
+      - name: Rewrite next 10 placeholders
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: python scripts/rewrite_placeholders.py --all --limit 10
+
+      - name: Refresh related guides on all modern articles
+        run: python scripts/rewrite_placeholders.py --all --related-only
+
+      - name: Show changed files
+        run: git status --short
+
+      - name: Count remaining placeholders
+        run: |
+          python - <<'PY'
+          from scripts.rewrite_placeholders import POSTS, is_placeholder
+
+          remaining = 0
+          for post in sorted(POSTS.glob("*.html")):
+              if post.name == "index.html":
+                  continue
+              try:
+                  page = post.read_text(encoding="utf-8")
+              except Exception:
+                  continue
+              if is_placeholder(page):
+                  remaining += 1
+
+          print(f"Remaining placeholder articles after this batch: {remaining}")
+          PY
+
+      - name: Commit rewritten batch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Rewrite next 10 placeholder articles" || echo "No changes to commit"
+
+      - name: Sync and push
+        run: |
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
