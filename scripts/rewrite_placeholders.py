@@ -130,6 +130,22 @@ For equipment topics:
 - Explain fit, materials, durability, suitable users, maintenance and value.
 - Do not pretend anything was personally tested.
 - Do not recommend a specific retailer.
+
+For equipment articles with strong buying intent, especially titles containing words such as
+"Best", "Top", "Under", "For", "With" or a specific playing condition:
+- Treat the article as a practical buyer's guide, not only a general educational article.
+- Answer the buying intent near the beginning of the article.
+- Include an early H2 called "Quick Picks" or a similarly natural heading.
+- Give useful pick categories such as Best Overall, Best Budget, Best for Speed,
+  Best for Wide Feet, Best for Wet Conditions, or other categories that genuinely fit the topic.
+- Include a comparison table where useful.
+- Explain why each pick or equipment type suits that use case and mention important trade-offs.
+- Match the exact search intent closely. For example, if the topic is wet and muddy pitches,
+  discuss grip, stud configuration, soft-ground suitability, stability and maintenance in mud.
+- Do not invent current prices, availability, model years, product tests or specifications.
+- Do not invent named products. Only name a specific product model if the supplied legacy text
+  clearly supports that model. Otherwise make the Quick Picks based on equipment type,
+  construction, stud type or player use case.
 '''.strip()
 
 
