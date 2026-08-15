@@ -2,6 +2,11 @@ name: Bulk Rewrite - 10 Articles
 
 on:
   workflow_dispatch:
+    inputs:
+      file:
+        description: "Optional article filename to force rewrite, e.g. best-football-boots-for-wet-conditions.html"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -31,13 +36,25 @@ jobs:
       - name: Install dependencies
         run: python -m pip install --upgrade pip openai
 
-      - name: Preview next 10 placeholders
-        run: python scripts/rewrite_placeholders.py --all --limit 10 --dry-run
+      - name: Preview rewrite
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.file }}" ]; then
+            python scripts/rewrite_placeholders.py --file "${{ inputs.file }}" --force --dry-run
+          else
+            python scripts/rewrite_placeholders.py --all --limit 10 --dry-run
+          fi
 
-      - name: Rewrite next 10 placeholders
+      - name: Rewrite articles
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: python scripts/rewrite_placeholders.py --all --limit 10
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.file }}" ]; then
+            python scripts/rewrite_placeholders.py --file "${{ inputs.file }}" --force
+          else
+            python scripts/rewrite_placeholders.py --all --limit 10
+          fi
 
       - name: Refresh related guides on all modern articles
         run: python scripts/rewrite_placeholders.py --all --related-only
@@ -45,12 +62,17 @@ jobs:
       - name: Show changed files
         run: git status --short
 
-      - name: Commit rewritten batch
+      - name: Commit rewritten content
+        shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Rewrite next 10 placeholder articles" || echo "No changes to commit"
+          if [ -n "${{ inputs.file }}" ]; then
+            git commit -m "Force rewrite ${{ inputs.file }}" || echo "No changes to commit"
+          else
+            git commit -m "Rewrite next 10 placeholder articles" || echo "No changes to commit"
+          fi
 
       - name: Sync and push
         run: |
