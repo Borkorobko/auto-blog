@@ -45,10 +45,28 @@ jobs:
       - name: Show changed files
         run: git status --short
 
+      - name: Commit rewritten batch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Rewrite next 10 placeholder articles" || echo "No changes to commit"
+
+      - name: Sync and push
+        run: |
+          git pull --rebase origin main
+          git push origin HEAD:main
+
       - name: Count remaining placeholders
+        continue-on-error: true
         run: |
           python - <<'PY'
-          from scripts.rewrite_placeholders import POSTS, is_placeholder
+          import sys
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path("scripts").resolve()))
+
+          from rewrite_placeholders import POSTS, is_placeholder
 
           remaining = 0
           for post in sorted(POSTS.glob("*.html")):
@@ -63,18 +81,6 @@ jobs:
 
           print(f"Remaining placeholder articles after this batch: {remaining}")
           PY
-
-      - name: Commit rewritten batch
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "Rewrite next 10 placeholder articles" || echo "No changes to commit"
-
-      - name: Sync and push
-        run: |
-          git pull --rebase origin main
-          git push origin HEAD:main
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
