@@ -403,10 +403,23 @@ def rewrite(post: Path, dry_run: bool = False, force: bool = False, related_only
 
     body = ""
     last_error = None
-    for attempt in range(1, 4):
+    for attempt in range(1, 6):
+        generation_prompt = prompt_for(title, category, notes)
+
+        # If a previous attempt failed validation, explicitly tell the model
+        # what must be corrected on the next attempt.
+        if last_error is not None:
+            generation_prompt += (
+                "\n\nIMPORTANT CORRECTION FOR THIS RETRY:\n"
+                f"The previous draft failed validation for this reason: {last_error}\n"
+                "Regenerate the full article from scratch and specifically avoid that problem. "
+                "Do not merely rephrase the rejected claim; use evidence-cautious wording and "
+                "remove the unsupported mechanism or guarantee entirely."
+            )
+
         response = client.responses.create(
             model="gpt-4.1-mini",
-            input=prompt_for(title, category, notes),
+            input=generation_prompt,
         )
         body = clean_ai_html(response.output_text)
         try:
@@ -418,7 +431,7 @@ def rewrite(post: Path, dry_run: bool = False, force: bool = False, related_only
             print(f"Validation failed on attempt {attempt}: {exc}")
 
     if last_error is not None:
-        raise RuntimeError(f"Article validation failed after 3 attempts: {last_error}")
+        raise RuntimeError(f"Article validation failed after 5 attempts: {last_error}")
 
     related = related_block(post, category)
     intermediate = f'''<!doctype html>
@@ -517,7 +530,18 @@ def main() -> None:
     print(f"  Errors: {errors}")
 
     if errors:
-        raise SystemExit(1)
+        if args.all:
+            # In bulk mode, keep successful rewrites and allow the workflow
+            # to commit them. Failed placeholders remain untouched and will
+            # be retried on the next batch.
+            print()
+            print(
+                f"WARNING: {errors} article(s) failed, but successful bulk rewrites "
+                "will still be committed. Failed placeholders remain for the next run."
+            )
+        else:
+            # Single-file repair/test runs should still fail loudly.
+            raise SystemExit(1)
 
 
 if __name__ == "__main__":
