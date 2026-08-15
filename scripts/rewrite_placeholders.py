@@ -96,7 +96,14 @@ Requirements:
 - Be specific to the exact topic.
 - Keep useful legacy ideas when relevant, but expand them substantially.
 - Do not invent studies, statistics, prices, professional endorsements, product tests or personal experience.
-- Do not claim that exercises or equipment guarantee injury prevention.
+- Do not claim that exercises, recovery methods or equipment guarantee injury prevention, faster recovery, muscle growth or performance gains.
+- When evidence or individual response can vary, use cautious wording such as "may", "can", "for some players" or "depends on".
+- Do not present disputed exercise/recovery mechanisms as established facts.
+- Never describe lactate or lactic acid as a toxin or simple "metabolic waste" that must be flushed or removed.
+- Never claim that lactate/lactic acid is the cause of delayed muscle soreness.
+- Never claim that muscle "microtears" are required or must occur for strength or muscle growth.
+- Do not claim that stretching by itself prevents injuries.
+- Do not claim that sweating, detox products or recovery sessions remove toxins.
 - Do not mention artificial intelligence or that the page was rewritten.
 - Return only valid HTML for inside an article.
 - Do not include html, head, body, article, h1, script or style tags.
@@ -113,6 +120,11 @@ For training, speed, agility, strength or conditioning topics:
 
 For recovery or nutrition topics:
 - Focus on practical timing, habits and choices without medical diagnosis or exaggerated claims.
+- Treat recovery timing and weekly frequency as flexible examples, not universal rules.
+- Do not tell every player that recovery must happen within a fixed number of hours or that everyone needs a fixed number of recovery sessions each week.
+- Active recovery may feel useful and can influence short-term physiological markers, but do not claim it automatically accelerates muscle recovery or subsequent performance.
+- Explain that sleep, adequate food and fluid intake, training load management and appropriate rest are core recovery basics.
+- If discussing supplements, do not promise therapeutic effects, diagnose deficiencies or imply that supplements are required.
 
 For equipment topics:
 - Explain fit, materials, durability, suitable users, maintenance and value.
@@ -140,6 +152,49 @@ def validate(body: str) -> None:
     if found:
         raise RuntimeError(
             "American-football terminology detected: " + ", ".join(found)
+        )
+
+    # Reject common fitness/recovery myths or overconfident health claims.
+    evidence_safety_patterns = [
+        (
+            r"(?:flush|flushes|flushing|remove|removes|removing|clear|clears|clearing)"
+            r".{0,70}(?:lactic acid|lactate|metabolic waste|toxins?)",
+            "claims that recovery flushes/removes lactate, metabolic waste or toxins",
+        ),
+        (
+            r"(?:lactic acid|lactate).{0,70}(?:toxin|waste|causes? (?:muscle )?soreness)",
+            "mischaracterizes lactate/lactic acid",
+        ),
+        (
+            r"(?:micro[- ]?tears?|tiny muscle tears).{0,100}"
+            r"(?:must|required|necessary|need(?:ed)?|build strength|muscle growth|grow muscle)",
+            "claims muscle microtears are required for adaptation",
+        ),
+        (
+            r"(?:stretching|stretch).{0,60}(?:prevents?|guarantees?)"
+            r".{0,30}(?:injury|injuries)",
+            "claims stretching itself prevents injury",
+        ),
+        (
+            r"(?:sweat|sweating|detox).{0,60}(?:remove|removes|flush|flushes|clear|clears)"
+            r".{0,30}(?:toxin|toxins)",
+            "claims sweating/detox removes toxins",
+        ),
+        (
+            r"(?:guarantees?|guaranteed|always prevents?|will prevent)"
+            r".{0,60}(?:injury|injuries|recovery|performance|muscle growth)",
+            "uses an overconfident health/performance guarantee",
+        ),
+    ]
+
+    safety_issues = []
+    for pattern, label in evidence_safety_patterns:
+        if re.search(pattern, plain, flags=re.I | re.S):
+            safety_issues.append(label)
+
+    if safety_issues:
+        raise RuntimeError(
+            "Evidence-safety validation failed: " + "; ".join(safety_issues)
         )
 
     h2 = [strip_tags(x).lower() for x in re.findall(r"<h2[^>]*>(.*?)</h2>", body, flags=re.I | re.S)]
