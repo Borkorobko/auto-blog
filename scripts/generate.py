@@ -29,6 +29,14 @@ STOP_WORDS = {
     "to", "with", "football", "player", "players",
 }
 
+EQUIPMENT_PATTERNS = [
+    r"\bboot(?:s)?\b", r"\bcleat(?:s)?\b", r"\bshin guards?\b",
+    r"\bglove(?:s)?\b", r"\bequipment\b", r"\bwater bottle\b",
+    r"\bresistance bands?\b", r"\bgear\b", r"\bcone(?:s)?\b",
+    r"\bladder\b", r"\bbackpack\b", r"\bsock(?:s)?\b",
+    r"\brebounder\b", r"\bball\b",
+]
+
 
 def slugify(text: str) -> str:
     text = text.lower().strip()
@@ -36,13 +44,17 @@ def slugify(text: str) -> str:
     return text.strip("-")
 
 
+def matches_any(text: str, patterns: list[str]) -> bool:
+    return any(re.search(pattern, text, flags=re.I) for pattern in patterns)
+
+
 def infer_category(topic: str) -> str:
     t = topic.lower()
-    if any(word in t for word in ["boot", "shin guard", "glove", "equipment", "water bottle", "resistance band", "gear", "cone", "ladder"]):
+    if matches_any(t, EQUIPMENT_PATTERNS):
         return "Equipment"
     if any(word in t for word in ["recovery", "stretch", "mobility", "protein", "creatine", "supplement", "nutrition", "eat", "food", "hydration"]):
         return "Recovery & Nutrition"
-    if any(word in t for word in ["strength", "gym", "power", "plyometric", "core", "leg workout", "stronger"]):
+    if any(word in t for word in ["strength", "gym", "power", "plyometric", "core", "leg workout", "stronger", "explosive"]):
         return "Strength & Power"
     if any(word in t for word in ["conditioning", "endurance", "stamina", "fitness", "pre season", "pre-season"]):
         return "Fitness"
@@ -60,7 +72,7 @@ def approved_product_context(topic: str, category: str) -> str:
         return "No named product recommendations are needed for this topic."
 
     t = topic.lower()
-    is_boot_topic = any(word in t for word in ["boot", "boots", "cleat", "cleats"])
+    is_boot_topic = bool(re.search(r"\b(?:boot|boots|cleat|cleats)\b", t))
     if not is_boot_topic:
         return (
             "No specific named products are pre-verified for this equipment topic. "
@@ -121,6 +133,8 @@ def related_posts_for(current_post: Path, all_posts: list[Path], limit: int = 4)
             continue
         candidate_tokens = topic_tokens(candidate.stem.replace("-", " "))
         overlap = len(current_tokens & candidate_tokens)
+        if overlap <= 0:
+            continue
         ranked.append((overlap, candidate.name, candidate))
     ranked.sort(key=lambda item: (-item[0], item[1]))
     return [item[2] for item in ranked[:limit]]
@@ -370,8 +384,9 @@ prompt = f'''
 Write a detailed, genuinely useful English article for Football Training Lab.
 Exact topic: "{keyword}"
 Category: {category}
-Audience: amateur and developing football players, beginner-to-intermediate level.
+Audience: amateur and developing association-football (soccer) players, beginner-to-intermediate level.
 Length: approximately 1200 to 1700 words.
+Sport context: this site is exclusively about association football (soccer), never American football. Interpret every use of "football" as association football. Do not mention American-football equipment, positions or concepts such as helmets, shoulder pads, mouthguards, quarterbacks, linebackers, wide receivers, defensive backs, touchdowns or NFL-style gear. For equipment examples, use association-football items such as boots/cleats, shin guards, a football, training kit, goalkeeper gloves, cones, bags and water bottles when relevant.
 Accuracy: do not invent studies, statistics, prices, certifications or endorsements; do not claim equipment or exercises prevent injuries; do not diagnose or treat medical conditions; tell readers to stop or reduce intensity when they feel sharp pain; never claim personal testing; do not mention artificial intelligence.
 
 Product recommendation context:
