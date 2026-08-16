@@ -6,11 +6,37 @@ import subprocess
 POSTS = Path("posts")
 MAX_SOURCE_LINKS = 3
 LINKS_PER_NEW_ARTICLE = 5
+MIN_RELEVANCE_SCORE = 5
 
+# Keep topic-bearing words such as training/workout. They are useful for
+# distinguishing a training plan from unrelated equipment pages.
 STOP_WORDS = {
     "a", "an", "and", "best", "for", "from", "guide", "how", "in", "of",
-    "on", "the", "to", "with", "football", "player", "players", "training",
-    "workout", "workouts",
+    "on", "the", "to", "with", "football", "player", "players",
+}
+
+CATEGORY_PATTERNS = {
+    "equipment": [
+        r"\bboot(?:s)?\b", r"\bcleat(?:s)?\b", r"\bshin guards?\b",
+        r"\bglove(?:s)?\b", r"\bequipment\b", r"\bwater bottle\b",
+        r"\bresistance bands?\b", r"\bgear\b", r"\bcone(?:s)?\b",
+        r"\bladder\b", r"\bbackpack\b", r"\bsock(?:s)?\b",
+        r"\brebounder\b", r"\bball\b",
+    ],
+    "recovery & nutrition": [
+        r"\brecovery\b", r"\bstretch(?:ing)?\b", r"\bmobility\b",
+        r"\bprotein\b", r"\bcreatine\b", r"\bsupplement(?:s)?\b",
+        r"\bnutrition\b", r"\bhydration\b", r"\bfood\b", r"\beat\b",
+    ],
+    "strength & power": [
+        r"\bstrength\b", r"\bgym\b", r"\bpower\b", r"\bplyometric(?:s)?\b",
+        r"\bcore\b", r"\bleg workout\b", r"\blower body\b", r"\bstronger\b",
+        r"\bexplosive\b",
+    ],
+    "fitness": [
+        r"\bconditioning\b", r"\bendurance\b", r"\bstamina\b",
+        r"\bfitness\b", r"\bpre[- ]season\b",
+    ],
 }
 
 
@@ -31,6 +57,15 @@ def page_title(text: str, fallback: Path) -> str:
 def page_category(text: str) -> str:
     match = re.search(r'<span[^>]*class="[^"]*tag[^"]*"[^>]*>(.*?)</span>', text, flags=re.I | re.S)
     return clean_text(match.group(1)).lower() if match else ""
+
+
+def effective_category(title: str, fallback: str) -> str:
+    """Correct obvious legacy misclassifications from the title itself."""
+    lowered = title.lower()
+    for category, patterns in CATEGORY_PATTERNS.items():
+        if any(re.search(pattern, lowered, flags=re.I) for pattern in patterns):
+            return category
+    return fallback
 
 
 def tokens(value: str) -> set[str]:
@@ -70,12 +105,17 @@ def relevance_score(target_title: str, target_category: str, source_title: str, 
     target_tokens = tokens(target_title)
     source_tokens = tokens(source_title)
     common = target_tokens & source_tokens
+
+    # Never create a contextual link just because two pages share a broad
+    # category. At least one meaningful title term must overlap.
+    if not common:
+        return 0
+
     score = len(common) * 5
 
     if target_category and source_category == target_category:
         score += 3
 
-    # Small semantic bridges between closely related football-performance categories.
     performance_categories = {"speed & training", "fitness", "strength & power", "recovery & nutrition"}
     if target_category in performance_categories and source_category in performance_categories:
         score += 1
@@ -131,7 +171,7 @@ def main() -> None:
 
     target_text = target.read_text(encoding="utf-8")
     target_title = page_title(target_text, target)
-    target_category = page_category(target_text)
+    target_category = effective_category(target_title, page_category(target_text))
 
     ranked = []
     for source in POSTS.glob("*.html"):
@@ -144,12 +184,11 @@ def main() -> None:
             continue
 
         source_title = page_title(source_text, source)
-        source_category = page_category(source_text)
+        source_category = effective_category(source_title, page_category(source_text))
         score = relevance_score(target_title, target_category, source_title, source_category)
-        if score <= 0:
+        if score < MIN_RELEVANCE_SCORE:
             continue
 
-        # Prefer equally relevant pages that currently have fewer auto contextual links.
         ranked.append((score, -contextual_link_count(source_text), source.name, source))
 
     ranked.sort(key=lambda item: (-item[0], -item[1], item[2]))
@@ -162,6 +201,7 @@ def main() -> None:
 
     print(f"Contextual-link target: {target.name}")
     print(f"Contextual-link target category: {target_category or 'unknown'}")
+    print(f"Contextual-link candidates passing relevance: {len(ranked)}")
     print(f"Contextual internal links added: {changed}")
 
 
