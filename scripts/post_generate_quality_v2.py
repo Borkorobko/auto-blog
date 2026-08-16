@@ -1,4 +1,5 @@
 import html
+import json
 import re
 from pathlib import Path
 
@@ -78,48 +79,112 @@ def quality_issues(body: str, title: str, category: str) -> list[str]:
     return _original_quality_issues(normalized, title, category)
 
 
-def first_paragraph_description(body: str, fallback_title: str) -> str:
-    match = re.search(r"<p(?:\s[^>]*)?>(.*?)</p>", body, flags=re.I | re.S)
-    if match:
-        text = re.sub(r"<[^>]+>", " ", match.group(1))
-        text = html.unescape(re.sub(r"\s+", " ", text)).strip()
-    else:
-        text = f"Practical football guide to {fallback_title.lower()} with useful tips for developing players."
+EQUIPMENT_TERMS = {
+    "boots", "boot", "rebounder", "ladder", "cones", "cone", "bands", "band",
+    "gloves", "glove", "shin guards", "shin guard", "socks", "sock", "bottle",
+    "backpack", "ball", "balls", "equipment", "gear",
+}
 
-    # Keep metadata safe in both HTML attributes and JSON-LD string values.
+
+def clean_meta_text(text: str) -> str:
+    text = html.unescape(re.sub(r"\s+", " ", text)).strip()
     text = text.replace('"', "'").replace("\\", "").replace("&", "and")
-    text = re.sub(r"[<>]", "", text).strip()
+    return re.sub(r"[<>]", "", text).strip()
 
-    if len(text) > 155:
-        shortened = text[:155].rsplit(" ", 1)[0].rstrip(" ,;:-")
-        text = shortened + "."
-    elif text and text[-1] not in ".!?":
-        text += "."
 
-    return text
+def build_meta_description(title: str, category: str) -> str:
+    lower_title = title.lower().strip()
+    is_equipment = any(term in lower_title for term in EQUIPMENT_TERMS)
+
+    if is_equipment:
+        if lower_title.startswith("best "):
+            description = (
+                f"Learn how to choose the {lower_title}, including key features, trade-offs, "
+                "training uses and practical buying tips."
+            )
+        else:
+            description = (
+                f"Learn how to choose {lower_title}, including key features, trade-offs, "
+                "training uses and practical buying tips."
+            )
+    elif "recovery" in category.lower() or "nutrition" in category.lower():
+        description = (
+            f"Practical guide to {lower_title}, with useful recovery, nutrition, timing and "
+            "common-mistake advice for football players."
+        )
+    elif "strength" in category.lower() or "fitness" in category.lower():
+        description = (
+            f"Practical guide to {lower_title}, with useful exercises, progressions, common "
+            "mistakes and training tips for football players."
+        )
+    else:
+        description = (
+            f"Practical guide to {lower_title}, with useful drills, progressions, common "
+            "mistakes and training tips for football players."
+        )
+
+    description = clean_meta_text(description)
+    if len(description) > 155:
+        compact = description.replace(" practical", "").replace(" useful", "")
+        description = compact if len(compact) <= 155 else description
+    if len(description) > 155:
+        description = f"Practical guide to {lower_title} with clear football training tips, common mistakes and actionable advice."
+    return clean_meta_text(description)
+
+
+def replace_description_fields(page: str, description: str) -> str:
+    escaped_attr = html.escape(description, quote=True)
+    escaped_json = json.dumps(description)[1:-1]
+
+    substitutions = [
+        (
+            re.compile(r'(<meta\s+name="description"\s+content=")[^"]*(")', re.I),
+            lambda m: f"{m.group(1)}{escaped_attr}{m.group(2)}",
+        ),
+        (
+            re.compile(r'(<meta\s+property="og:description"\s+content=")[^"]*(")', re.I),
+            lambda m: f"{m.group(1)}{escaped_attr}{m.group(2)}",
+        ),
+        (
+            re.compile(r'(<meta\s+name="twitter:description"\s+content=")[^"]*(")', re.I),
+            lambda m: f"{m.group(1)}{escaped_attr}{m.group(2)}",
+        ),
+        (
+            re.compile(r'(<p\s+class="article-description">).*?(</p>)', re.I | re.S),
+            lambda m: f"{m.group(1)}{html.escape(description)}{m.group(2)}",
+        ),
+    ]
+
+    updated = page
+    for pattern, replacement in substitutions:
+        updated = pattern.sub(replacement, updated, count=1)
+
+    updated = re.sub(
+        r'("description"\s*:\s*")[^"]*(")',
+        lambda m: f"{m.group(1)}{escaped_json}{m.group(2)}",
+        updated,
+        count=1,
+    )
+    return updated
 
 
 def polish_page_seo(post: Path) -> None:
     page = post.read_text(encoding="utf-8")
     old_title = _original_extract_title(page, post)
     new_title = seo_title_case(old_title)
-    body = extract_article_body(page)
-    new_description = first_paragraph_description(body, new_title)
-
-    description_match = re.search(
-        r'<meta\s+name="description"\s+content="([^"]*)"',
-        page,
-        flags=re.I,
-    )
-    old_description = description_match.group(1) if description_match else ""
+    category = quality.extract_category(page)
+    new_description = build_meta_description(new_title, category)
 
     if old_title and old_title != new_title:
         page = page.replace(old_title, new_title)
 
-    if old_description:
-        page = page.replace(old_description, new_description)
-
+    page = replace_description_fields(page, new_description)
     post.write_text(page, encoding="utf-8")
+
+    verification = post.read_text(encoding="utf-8")
+    if new_description not in html.unescape(verification):
+        raise RuntimeError("SEO metadata update did not persist in the generated article.")
+
     print(f"SEO title polished: {new_title}")
     print(f"Meta description polished: {new_description}")
 
