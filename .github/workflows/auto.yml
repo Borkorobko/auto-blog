@@ -35,7 +35,9 @@ jobs:
       - name: Generate site
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: python scripts/generate.py
+        run: |
+          python scripts/generate.py
+          python scripts/post_generate_quality.py
 
       - name: Commit generated files
         run: |
