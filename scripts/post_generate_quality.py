@@ -12,8 +12,8 @@ BACKLINK_LIMIT = 4
 
 STOP_WORDS = {
     "a", "an", "and", "are", "best", "for", "from", "guide", "how", "in",
-    "of", "on", "the", "to", "with", "football", "player", "players", "training",
-    "workout", "workouts", "drill", "drills", "complete", "top", "routine",
+    "of", "on", "the", "to", "with", "football", "player", "players",
+    "drill", "drills", "complete", "top", "routine",
 }
 
 BANNED_PATTERNS = [
@@ -24,6 +24,23 @@ BANNED_PATTERNS = [
     (r"\bguarantee(?:s|d|ing)?\b", "guarantee claim"),
     (r"\bwill\s+(?:prevent|eliminate|ensure|guarantee)\b", "absolute outcome claim"),
     (r"\blactic acid\b", "oversimplified lactic-acid claim"),
+    (r"\bhelmet(?:s)?\b", "American-football helmet reference"),
+    (r"\bshoulder pads?\b", "American-football shoulder-pad reference"),
+    (r"\bmouthguards?\b", "American-football mouthguard reference"),
+    (r"\bquarterbacks?\b", "American-football position reference"),
+    (r"\blinebackers?\b", "American-football position reference"),
+    (r"\bwide receivers?\b", "American-football position reference"),
+    (r"\bdefensive backs?\b", "American-football position reference"),
+    (r"\btouchdowns?\b", "American-football scoring reference"),
+    (r"\bNFL\b", "American-football league reference"),
+]
+
+EQUIPMENT_PATTERNS = [
+    r"\bboot(?:s)?\b", r"\bcleat(?:s)?\b", r"\bshin guards?\b",
+    r"\bglove(?:s)?\b", r"\bequipment\b", r"\bwater bottle\b",
+    r"\bresistance bands?\b", r"\bgear\b", r"\bcone(?:s)?\b",
+    r"\bladder\b", r"\bbackpack\b", r"\bsock(?:s)?\b",
+    r"\brebounder\b", r"\bball\b",
 ]
 
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
@@ -94,6 +111,13 @@ def extract_category(page: str) -> str:
     if not match:
         return ""
     return html.unescape(re.sub(r"<[^>]+>", "", match.group(1)).strip())
+
+
+def effective_category(title: str, fallback: str) -> str:
+    lower = title.lower()
+    if any(re.search(pattern, lower, flags=re.I) for pattern in EQUIPMENT_PATTERNS):
+        return "Equipment"
+    return fallback
 
 
 def visible_text(fragment: str) -> str:
@@ -175,6 +199,7 @@ Known checks/issues:
 {issue_text}
 
 Mandatory editorial rules:
+- This site is exclusively about association football (soccer), never American football. Interpret every use of "football" as association football. Remove or replace American-football equipment, positions and concepts such as helmets, shoulder pads, mouthguards, quarterbacks, linebackers, wide receivers, defensive backs, touchdowns and NFL-style gear. Use association-football terminology and equipment instead.
 - Preserve the article's useful structure: key takeaways, table of contents, detailed h2 sections, practical details, a tip box, a warning box, exactly 3 FAQ h3 questions, and a concise conclusion.
 - Correct factual overstatements and unsupported certainty.
 - Never claim that equipment, a drill, a supplement, stretching, recovery work, or an exercise prevents or guarantees avoidance of injury.
@@ -215,7 +240,8 @@ def post_title(post: Path) -> str:
 
 def post_category(post: Path) -> str:
     try:
-        return extract_category(post.read_text(encoding="utf-8"))
+        page = post.read_text(encoding="utf-8")
+        return effective_category(extract_title(page, post), extract_category(page))
     except Exception:
         return ""
 
@@ -224,6 +250,8 @@ def relevance_score(source: Path, candidate: Path) -> int:
     source_tokens = topic_tokens(source.stem.replace("-", " "))
     candidate_tokens = topic_tokens(candidate.stem.replace("-", " "))
     overlap = len(source_tokens & candidate_tokens)
+    if overlap <= 0:
+        return 0
     same_category = bool(post_category(source)) and post_category(source) == post_category(candidate)
     score = overlap * 10
     if same_category:
@@ -324,7 +352,7 @@ def main() -> None:
     new_article = find_new_article()
     page = new_article.read_text(encoding="utf-8")
     title = extract_title(page, new_article)
-    category = extract_category(page)
+    category = effective_category(title, extract_category(page))
     body = extract_article_body(page)
 
     initial_issues = quality_issues(body, title, category)
