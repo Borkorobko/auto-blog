@@ -1,4 +1,7 @@
+import html
 import re
+from pathlib import Path
+
 import post_generate_quality as quality
 
 
@@ -39,6 +42,30 @@ def replace_article_body(page: str, body: str) -> str:
 
 
 _original_quality_issues = quality.quality_issues
+_original_extract_title = quality.extract_title
+_original_main = quality.main
+
+
+def seo_title_case(text: str) -> str:
+    small_words = {
+        "a", "an", "and", "as", "at", "but", "by", "for", "from", "in",
+        "of", "on", "or", "the", "to", "vs", "with",
+    }
+    words = text.strip().split()
+    polished = []
+    for index, word in enumerate(words):
+        lower = word.lower()
+        if index not in (0, len(words) - 1) and lower in small_words:
+            polished.append(lower)
+        elif lower == "vs":
+            polished.append("vs")
+        else:
+            polished.append(word[:1].upper() + word[1:].lower())
+    return " ".join(polished)
+
+
+def polished_extract_title(page: str, fallback: Path) -> str:
+    return seo_title_case(_original_extract_title(page, fallback))
 
 
 def quality_issues(body: str, title: str, category: str) -> list[str]:
@@ -51,10 +78,63 @@ def quality_issues(body: str, title: str, category: str) -> list[str]:
     return _original_quality_issues(normalized, title, category)
 
 
+def first_paragraph_description(body: str, fallback_title: str) -> str:
+    match = re.search(r"<p(?:\s[^>]*)?>(.*?)</p>", body, flags=re.I | re.S)
+    if match:
+        text = re.sub(r"<[^>]+>", " ", match.group(1))
+        text = html.unescape(re.sub(r"\s+", " ", text)).strip()
+    else:
+        text = f"Practical football guide to {fallback_title.lower()} with useful tips for developing players."
+
+    # Keep metadata safe in both HTML attributes and JSON-LD string values.
+    text = text.replace('"', "'").replace("\\", "").replace("&", "and")
+    text = re.sub(r"[<>]", "", text).strip()
+
+    if len(text) > 155:
+        shortened = text[:155].rsplit(" ", 1)[0].rstrip(" ,;:-")
+        text = shortened + "."
+    elif text and text[-1] not in ".!?":
+        text += "."
+
+    return text
+
+
+def polish_page_seo(post: Path) -> None:
+    page = post.read_text(encoding="utf-8")
+    old_title = _original_extract_title(page, post)
+    new_title = seo_title_case(old_title)
+    body = extract_article_body(page)
+    new_description = first_paragraph_description(body, new_title)
+
+    description_match = re.search(
+        r'<meta\s+name="description"\s+content="([^"]*)"',
+        page,
+        flags=re.I,
+    )
+    old_description = description_match.group(1) if description_match else ""
+
+    if old_title and old_title != new_title:
+        page = page.replace(old_title, new_title)
+
+    if old_description:
+        page = page.replace(old_description, new_description)
+
+    post.write_text(page, encoding="utf-8")
+    print(f"SEO title polished: {new_title}")
+    print(f"Meta description polished: {new_description}")
+
+
 quality.extract_article_body = extract_article_body
 quality.replace_article_body = replace_article_body
+quality.extract_title = polished_extract_title
 quality.quality_issues = quality_issues
 
 
+def main() -> None:
+    _original_main()
+    new_article = quality.find_new_article()
+    polish_page_seo(new_article)
+
+
 if __name__ == "__main__":
-    quality.main()
+    main()
