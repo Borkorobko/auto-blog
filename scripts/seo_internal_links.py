@@ -39,6 +39,12 @@ CATEGORY_PATTERNS = {
     ],
 }
 
+AUTO_LINK_RE = re.compile(
+    r'\s*<!-- AUTO-CONTEXT-LINK:(?P<target>[^>]+) -->\s*'
+    r'<p class="contextual-link">.*?</p>\s*',
+    flags=re.I | re.S,
+)
+
 
 def clean_text(value: str) -> str:
     value = re.sub(r"<[^>]+>", " ", value)
@@ -127,6 +133,42 @@ def contextual_link_count(text: str) -> int:
     return text.count("<!-- AUTO-CONTEXT-LINK:")
 
 
+def remove_irrelevant_existing_links() -> int:
+    """Remove stale auto-links that no longer meet the current relevance rules."""
+    removed = 0
+    for source in POSTS.glob("*.html"):
+        if source.name == "index.html":
+            continue
+        source_text = source.read_text(encoding="utf-8")
+        source_title = page_title(source_text, source)
+        source_category = effective_category(source_title, page_category(source_text))
+
+        def replacement(match: re.Match) -> str:
+            nonlocal removed
+            target_name = match.group("target").strip()
+            target = POSTS / target_name
+            if not target.exists() or target == source:
+                removed += 1
+                print(f"REMOVED stale contextual link: {source.name} -> {target_name}")
+                return "\n"
+
+            target_text = target.read_text(encoding="utf-8")
+            target_title = page_title(target_text, target)
+            target_category = effective_category(target_title, page_category(target_text))
+            score = relevance_score(target_title, target_category, source_title, source_category)
+            if score < MIN_RELEVANCE_SCORE:
+                removed += 1
+                print(f"REMOVED weak contextual link: {source.name} -> {target_name} (score={score})")
+                return "\n"
+            return match.group(0)
+
+        updated = AUTO_LINK_RE.sub(replacement, source_text)
+        if updated != source_text:
+            source.write_text(updated, encoding="utf-8")
+
+    return removed
+
+
 def insert_contextual_link(source: Path, target: Path, target_title: str) -> bool:
     text = source.read_text(encoding="utf-8")
     target_href = target.name
@@ -164,9 +206,12 @@ def insert_contextual_link(source: Path, target: Path, target_title: str) -> boo
 
 
 def main() -> None:
+    removed = remove_irrelevant_existing_links()
+
     target = detect_new_article()
     if target is None or not target.exists():
         print("No article found for contextual internal linking.")
+        print(f"Irrelevant contextual links removed: {removed}")
         return
 
     target_text = target.read_text(encoding="utf-8")
@@ -203,6 +248,7 @@ def main() -> None:
     print(f"Contextual-link target category: {target_category or 'unknown'}")
     print(f"Contextual-link candidates passing relevance: {len(ranked)}")
     print(f"Contextual internal links added: {changed}")
+    print(f"Irrelevant contextual links removed: {removed}")
 
 
 if __name__ == "__main__":
