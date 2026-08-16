@@ -39,6 +39,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
+          python scripts/pre_generation_cleanup.py
           python scripts/generate.py
           python scripts/post_generate_quality_v2.py
           python scripts/seo_refresh_existing.py
