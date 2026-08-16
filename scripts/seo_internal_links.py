@@ -8,11 +8,16 @@ MAX_SOURCE_LINKS = 3
 LINKS_PER_NEW_ARTICLE = 5
 MIN_RELEVANCE_SCORE = 5
 
-# Keep topic-bearing words such as training/workout. They are useful for
-# distinguishing a training plan from unrelated equipment pages.
 STOP_WORDS = {
     "a", "an", "and", "best", "for", "from", "guide", "how", "in", "of",
     "on", "the", "to", "with", "football", "player", "players",
+}
+
+# These words are useful context, but are too broad to justify a cross-category
+# contextual link by themselves.
+GENERIC_LINK_TERMS = {
+    "training", "workout", "workouts", "plan", "plans", "drill", "drills",
+    "routine", "routines", "exercise", "exercises",
 }
 
 CATEGORY_PATTERNS = {
@@ -22,6 +27,8 @@ CATEGORY_PATTERNS = {
         r"\bresistance bands?\b", r"\bgear\b", r"\bcone(?:s)?\b",
         r"\bladder\b", r"\bbackpack\b", r"\bsock(?:s)?\b",
         r"\brebounder\b", r"\bball\b",
+        # Legacy title where "football" means the ball itself, not the sport.
+        r"\bbest football for\b",
     ],
     "recovery & nutrition": [
         r"\brecovery\b", r"\bstretch(?:ing)?\b", r"\bmobility\b",
@@ -111,19 +118,34 @@ def relevance_score(target_title: str, target_category: str, source_title: str, 
     target_tokens = tokens(target_title)
     source_tokens = tokens(source_title)
     common = target_tokens & source_tokens
-
-    # Never create a contextual link just because two pages share a broad
-    # category. At least one meaningful title term must overlap.
     if not common:
         return 0
 
-    score = len(common) * 5
+    specific_common = common - GENERIC_LINK_TERMS
+    same_category = bool(target_category) and target_category == source_category
 
-    if target_category and source_category == target_category:
+    performance_categories = {
+        "speed & training", "fitness", "strength & power", "recovery & nutrition"
+    }
+    both_performance = (
+        target_category in performance_categories
+        and source_category in performance_categories
+    )
+
+    # A generic word such as "training" is not enough to bridge unrelated
+    # categories. This blocks links such as an equipment-buying page pointing
+    # to a winger training plan merely because both titles contain "training".
+    if not specific_common:
+        if target_category == "equipment" or source_category == "equipment":
+            return 0
+        if not same_category:
+            return 0
+
+    score = len(specific_common) * 6 + len(common) * 2
+
+    if same_category:
         score += 3
-
-    performance_categories = {"speed & training", "fitness", "strength & power", "recovery & nutrition"}
-    if target_category in performance_categories and source_category in performance_categories:
+    if both_performance:
         score += 1
 
     return score
