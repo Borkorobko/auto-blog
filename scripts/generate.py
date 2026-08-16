@@ -49,6 +49,43 @@ def infer_category(topic: str) -> str:
     return "Speed & Training"
 
 
+def approved_product_context(topic: str, category: str) -> str:
+    """Return a small, verified product pool for buyer-intent articles.
+
+    The named boot models below were checked against official Nike, adidas and
+    PUMA product/category pages on 2026-08-16. The generator must not infer
+    current prices, stock or unlisted specifications from this list.
+    """
+    if category != "Equipment":
+        return "No named product recommendations are needed for this topic."
+
+    t = topic.lower()
+    is_boot_topic = any(word in t for word in ["boot", "boots", "cleat", "cleats"])
+    if not is_boot_topic:
+        return (
+            "No specific named products are pre-verified for this equipment topic. "
+            "Use equipment types, construction, fit, materials and use cases instead of inventing model names."
+        )
+
+    return '''Approved named football-boot examples (official brand listings checked 2026-08-16):
+- Nike Mercurial Vapor 17 Elite — official Nike listings include Soft-Ground, Firm-Ground and Artificial-Grass versions.
+- Nike Mercurial Superfly 11 Elite — official Nike listings include Soft-Ground, Firm-Ground and Artificial-Grass versions.
+- Nike Tiempo Maestro Elite — official Nike listings include Soft-Ground and Firm-Ground versions.
+- adidas F50 Elite — official adidas listings include Soft Ground, Firm Ground and Artificial Ground versions.
+- PUMA FUTURE 8 ULTIMATE MxSG — Mixed/Soft Ground.
+- PUMA ULTRA 6 ULTIMATE MxSG — Mixed/Soft Ground.
+- PUMA KING ULTIMATE MxSG — Mixed/Soft Ground.
+
+Rules for named recommendations:
+- You may name ONLY products from the approved list above.
+- Use only models and surface variants that genuinely match the exact topic.
+- Never invent or state current prices, discounts, stock, release status, model years, weights or specifications that are not listed above.
+- Do not call any model the latest/newest unless the topic explicitly asks for current releases and current data is supplied.
+- For price-cap topics such as "under 100", do NOT claim any named model fits the price cap because current price data is intentionally not supplied; use product tiers/types and buying criteria instead.
+- Do not claim personal testing. Frame picks as practical recommendations based on the listed surface/use information and explain trade-offs.
+- When buying intent is strong, prefer a compact comparison table with 3 to 5 relevant named picks where the verified list genuinely supports them.'''
+
+
 def clean_ai_html(text: str) -> str:
     cleaned = text.strip()
     if cleaned.startswith("```html"):
@@ -327,6 +364,7 @@ image_path = create_svg(slug, keyword, category)
 image_url = f"{SITE}/images/{image_path.name}"
 description = meta_description(keyword)
 today_utc = datetime.now(timezone.utc).date().isoformat()
+product_context = approved_product_context(keyword, category)
 
 prompt = f'''
 Write a detailed, genuinely useful English article for Football Training Lab.
@@ -335,6 +373,16 @@ Category: {category}
 Audience: amateur and developing football players, beginner-to-intermediate level.
 Length: approximately 1200 to 1700 words.
 Accuracy: do not invent studies, statistics, prices, certifications or endorsements; do not claim equipment or exercises prevent injuries; do not diagnose or treat medical conditions; tell readers to stop or reduce intensity when they feel sharp pain; never claim personal testing; do not mention artificial intelligence.
+
+Product recommendation context:
+{product_context}
+
+For Equipment articles:
+- If the topic has strong buying intent (for example Best, Top, For, With, Under, or a specific playing condition), answer the buying intent near the beginning instead of writing only a generic educational guide.
+- When named products are allowed by the approved context, use 3 to 5 relevant models in a useful comparison table and explain who each suits plus its main trade-off.
+- If no named products are approved for the topic, use clear product types or construction categories instead of inventing brand/model names.
+- Never recommend a specific retailer and never invent affiliate links.
+
 Return only valid HTML inside the article content. Do not include html, head, body, article, script, style or h1 tags. Do not use Markdown.
 Use this structure:
 1. Short direct introduction.
@@ -342,7 +390,7 @@ Use this structure:
 3. nav class="table-of-contents" with h2 "In this guide" and anchor links to major sections.
 4. Several detailed h2 sections; each major h2 must have a unique lowercase id using hyphens.
 5. Include practical steps, sets, repetitions, rest periods, weekly structure, or buying criteria when relevant.
-6. Include one useful table when it genuinely helps; do not force one.
+6. Include one useful table when it genuinely helps; for strong Equipment buying intent, prefer a comparison table.
 7. div class="tip-box" with one strong practical tip.
 8. div class="warning-box" with a common mistake or safety point.
 9. section class="faq" with h2 "Frequently asked questions" and exactly 3 h3 questions, each immediately followed by one p answer.
