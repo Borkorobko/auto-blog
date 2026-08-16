@@ -86,6 +86,14 @@ EQUIPMENT_TERMS = {
 }
 
 
+def title_has_equipment_term(title: str) -> bool:
+    lower_title = title.lower().strip()
+    return any(
+        re.search(rf"(?<!\w){re.escape(term)}(?!\w)", lower_title)
+        for term in EQUIPMENT_TERMS
+    )
+
+
 def clean_meta_text(text: str) -> str:
     text = html.unescape(re.sub(r"\s+", " ", text)).strip()
     text = text.replace('"', "'").replace("\\", "").replace("&", "and")
@@ -94,7 +102,7 @@ def clean_meta_text(text: str) -> str:
 
 def build_meta_description(title: str, category: str) -> str:
     lower_title = title.lower().strip()
-    is_equipment = any(term in lower_title for term in EQUIPMENT_TERMS)
+    is_equipment = title_has_equipment_term(lower_title)
 
     if is_equipment:
         if lower_title.startswith("best "):
@@ -189,6 +197,35 @@ def polish_page_seo(post: Path) -> None:
     print(f"Meta description polished: {new_description}")
 
 
+def repair_misclassified_existing_meta() -> int:
+    repaired = 0
+    for post in sorted(Path("posts").glob("*.html")):
+        if post.name == "index.html":
+            continue
+
+        page = post.read_text(encoding="utf-8")
+        if "practical buying tips" not in page.lower():
+            continue
+
+        try:
+            title = seo_title_case(_original_extract_title(page, post))
+            category = quality.extract_category(page)
+        except Exception:
+            continue
+
+        if title_has_equipment_term(title):
+            continue
+
+        new_description = build_meta_description(title, category)
+        updated = replace_description_fields(page, new_description)
+        if updated != page:
+            post.write_text(updated, encoding="utf-8")
+            repaired += 1
+            print(f"Repaired misclassified meta description: {post}")
+
+    return repaired
+
+
 quality.extract_article_body = extract_article_body
 quality.replace_article_body = replace_article_body
 quality.extract_title = polished_extract_title
@@ -199,6 +236,8 @@ def main() -> None:
     _original_main()
     new_article = quality.find_new_article()
     polish_page_seo(new_article)
+    repaired = repair_misclassified_existing_meta()
+    print(f"Misclassified existing meta descriptions repaired: {repaired}")
 
 
 if __name__ == "__main__":
