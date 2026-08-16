@@ -42,6 +42,7 @@ jobs:
           python scripts/pre_generation_cleanup.py
           python scripts/generate.py
           python scripts/post_generate_quality_v2.py
+          python scripts/repair_football_context.py
           python scripts/seo_refresh_existing.py
           python scripts/seo_internal_links.py
           python scripts/pre_generation_cleanup.py
