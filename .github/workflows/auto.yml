@@ -48,6 +48,14 @@ jobs:
           python scripts/seo_internal_links.py
           python scripts/pre_generation_cleanup.py
 
+      - name: Collect Search Console feedback
+        env:
+          GSC_CLIENT_ID: ${{ secrets.GSC_CLIENT_ID }}
+          GSC_CLIENT_SECRET: ${{ secrets.GSC_CLIENT_SECRET }}
+          GSC_REFRESH_TOKEN: ${{ secrets.GSC_REFRESH_TOKEN }}
+          GSC_SITE_PROPERTY: sc-domain:footballtraininglab.com
+        run: python scripts/gsc_feedback.py
+
       - name: Commit generated files
         run: |
           git config user.name "github-actions[bot]"
