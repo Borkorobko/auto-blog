@@ -40,6 +40,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           python scripts/pre_generation_cleanup.py
+          python scripts/replenish_keywords.py
           python scripts/generate.py
           python scripts/post_generate_quality_v2.py
           python scripts/repair_football_context.py
