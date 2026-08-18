@@ -14,8 +14,27 @@
     "old_title": "Best Football Boots for Wet & Muddy Conditions",
     "new_title": "Best Football Boots for Wet and Muddy Conditions",
     "old_description": "Looking for the best football boots for wet and muddy conditions? Compare SG vs FG studs, grip, water resistance, fit and maintenance for soft pitches.",
-    "new_description": "Find the best football boots for wet and muddy pitches with expert tips on SG vs FG studs, grip, waterproofing, fit, and maintenance.",
+    "new_description": "Find the best football boots for wet and muddy pitches with practical tips on SG vs FG studs, grip, waterproofing, fit, and maintenance.",
     "quick_answer_action": "replaced_existing_paragraph",
     "reason": "This edit improves the title by replacing the ampersand with 'and' for better clarity and natural phrasing, while preserving the original meaning and strong relevance to the target query. The description is slightly refined for conciseness and keyword presence without adding unverified content. The quick answer is crafted to directly address the query using existing article details, enhancing SEO relevance while maintaining accuracy."
+  },
+  {
+    "date": "2026-08-18",
+    "status": "applied",
+    "page": "https://footballtraininglab.com/posts/football-boots-for-ankle-support",
+    "file": "posts/football-boots-for-ankle-support.html",
+    "target_query": "football boots with ankle support",
+    "query_impressions": 15.0,
+    "query_clicks": 0.0,
+    "query_ctr": 0.0,
+    "query_position": 23.27,
+    "page_impressions": 35.0,
+    "page_position": 25.43,
+    "old_title": "football boots for ankle support",
+    "new_title": "Football Boots for Ankle Support: Choosing the Right Fit",
+    "old_description": "Practical guide to football boots for ankle support for football players, with useful advice, common mistakes, recommendations, and FAQs.",
+    "new_description": "Comprehensive guide on football boots with ankle support, covering features, types, fitting tips, lacing methods, and FAQs for amateur players.",
+    "quick_answer_action": "inserted_new_section",
+    "reason": "The original title already aligns well with the target query, so a minor wording enhancement was made to clarify the focus on choosing the right fit. The description was optimized to better summarize key article contents within character limits. The quick answer directly addresses the query using existing article information about boot types, features, and selection advice, improving relevance for search. This conservative update respects the original article's topic and structure while targeting the SEO signal."
   }
 ]
