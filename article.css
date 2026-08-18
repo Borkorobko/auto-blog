@@ -40,6 +40,24 @@
   color:#718078;
   font-size:.88rem;
 }
+.article-byline{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px 14px;
+  align-items:center;
+  margin-top:12px;
+  color:#64756c;
+  font-size:.86rem;
+}
+.article-byline span+span::before{
+  content:"•";
+  margin-right:14px;
+  color:#9aacA2;
+}
+.article-byline a{
+  color:#117454;
+  font-weight:800;
+}
 .article-hero{
   display:block;
   width:100%;
@@ -178,6 +196,9 @@
   .article-header h1{font-size:clamp(2.4rem,12vw,4rem);}
   .article-description{font-size:1.03rem;}
   .article-content{font-size:1rem;}
+  .article-byline{display:block;}
+  .article-byline span{display:block;margin-top:5px;}
+  .article-byline span+span::before{content:"";margin:0;}
   .key-takeaways,
   .table-of-contents,
   .tip-box,
