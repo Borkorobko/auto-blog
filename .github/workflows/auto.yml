@@ -56,10 +56,24 @@ jobs:
           GSC_SITE_PROPERTY: sc-domain:footballtraininglab.com
         run: python scripts/gsc_feedback.py
 
+      - name: Measure prior GSC optimizations
+        env:
+          GSC_CLIENT_ID: ${{ secrets.GSC_CLIENT_ID }}
+          GSC_CLIENT_SECRET: ${{ secrets.GSC_CLIENT_SECRET }}
+          GSC_REFRESH_TOKEN: ${{ secrets.GSC_REFRESH_TOKEN }}
+          GSC_SITE_PROPERTY: sc-domain:footballtraininglab.com
+        run: python scripts/gsc_optimization_measure.py
+
+      - name: Apply measured-outcome SEO precheck
+        run: python scripts/gsc_optimizer_precheck.py
+
       - name: Optimize one GSC opportunity
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python scripts/gsc_seo_optimizer.py
+
+      - name: Apply SEO claim guardrails
+        run: python scripts/seo_claim_guardrails.py
 
       - name: Commit generated files
         run: |
