@@ -56,6 +56,9 @@ jobs:
           GSC_SITE_PROPERTY: sc-domain:footballtraininglab.com
         run: python scripts/gsc_feedback.py
 
+      - name: Queue one GSC-derived content topic
+        run: python scripts/gsc_topic_discovery.py
+
       - name: Measure prior GSC optimizations
         env:
           GSC_CLIENT_ID: ${{ secrets.GSC_CLIENT_ID }}
