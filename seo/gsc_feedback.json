@@ -2,25 +2,25 @@
   "site_property": "sc-domain:footballtraininglab.com",
   "site_origin": "https://footballtraininglab.com",
   "date_range": {
-    "start": "2026-07-18",
-    "end": "2026-08-14",
+    "start": "2026-07-19",
+    "end": "2026-08-15",
     "days": 28
   },
   "source": "Google Search Console Search Analytics API",
   "mode": "read_only_feedback",
-  "rows_received": 111,
-  "actionable_query_count": 6,
-  "actionable_page_count": 8,
+  "rows_received": 199,
+  "actionable_query_count": 9,
+  "actionable_page_count": 9,
   "top_query_opportunities": [
     {
       "page": "https://footballtraininglab.com/posts/best-football-boots-for-wet-conditions",
       "query": "best football boots for wet and muddy conditions",
       "clicks": 0.0,
-      "impressions": 13.0,
+      "impressions": 14.0,
       "ctr": 0.0,
-      "position": 9.69,
+      "position": 9.79,
       "opportunity": "quick_win",
-      "score": 42.25,
+      "score": 45.5,
       "local_article": true
     },
     {
@@ -35,25 +35,69 @@
       "local_article": true
     },
     {
-      "page": "https://footballtraininglab.com/posts/best-speed-exercises-for-football-players",
-      "query": "speed drills for football",
+      "page": "https://footballtraininglab.com/posts/football-training-drills.html",
+      "query": "football training",
       "clicks": 0.0,
-      "impressions": 8.0,
+      "impressions": 12.0,
       "ctr": 0.0,
-      "position": 28.62,
+      "position": 34.83,
       "opportunity": "rising_visibility",
-      "score": 17.6,
+      "score": 26.4,
       "local_article": true
     },
     {
       "page": "https://footballtraininglab.com/posts/football-boots-for-ankle-support",
       "query": "ankle football boots",
       "clicks": 0.0,
+      "impressions": 7.0,
+      "ctr": 0.0,
+      "position": 17.71,
+      "opportunity": "rising_visibility",
+      "score": 20.125,
+      "local_article": true
+    },
+    {
+      "page": "https://footballtraininglab.com/posts/best-speed-exercises-for-football-players",
+      "query": "speed drills for football",
+      "clicks": 0.0,
+      "impressions": 9.0,
+      "ctr": 0.0,
+      "position": 28.11,
+      "opportunity": "rising_visibility",
+      "score": 19.8,
+      "local_article": true
+    },
+    {
+      "page": "https://footballtraininglab.com/posts/best-football-water-bottle",
+      "query": "football water bottles",
+      "clicks": 0.0,
+      "impressions": 7.0,
+      "ctr": 0.0,
+      "position": 28.14,
+      "opportunity": "rising_visibility",
+      "score": 15.4,
+      "local_article": true
+    },
+    {
+      "page": "https://footballtraininglab.com/posts/football-boots-for-ankle-support",
+      "query": "ankle support football boots",
+      "clicks": 0.0,
       "impressions": 6.0,
       "ctr": 0.0,
-      "position": 17.83,
+      "position": 27.67,
       "opportunity": "rising_visibility",
-      "score": 17.25,
+      "score": 13.2,
+      "local_article": true
+    },
+    {
+      "page": "https://footballtraininglab.com/posts/football-boots-for-ankle-support",
+      "query": "football boots ankle support",
+      "clicks": 0.0,
+      "impressions": 6.0,
+      "ctr": 0.0,
+      "position": 34.33,
+      "opportunity": "rising_visibility",
+      "score": 13.2,
       "local_article": true
     },
     {
@@ -66,48 +110,47 @@
       "opportunity": "rising_visibility",
       "score": 11.0,
       "local_article": true
-    },
-    {
-      "page": "https://footballtraininglab.com/posts/football-boots-for-ankle-support",
-      "query": "football boots ankle support",
-      "clicks": 0.0,
-      "impressions": 5.0,
-      "ctr": 0.0,
-      "position": 34.4,
-      "opportunity": "rising_visibility",
-      "score": 11.0,
-      "local_article": true
     }
   ],
   "top_page_opportunities": [
     {
-      "page": "https://footballtraininglab.com/posts/best-football-boots-for-wet-conditions",
+      "page": "https://footballtraininglab.com/posts/football-boots-for-ankle-support",
       "clicks": 0.0,
-      "impressions": 28.0,
+      "impressions": 35.0,
       "ctr": 0.0,
-      "position": 18.71,
+      "position": 25.43,
       "opportunity": "quick_win",
-      "score": 80.5,
+      "score": 77.0,
       "local_article": true
     },
     {
-      "page": "https://footballtraininglab.com/posts/football-boots-for-ankle-support",
+      "page": "https://footballtraininglab.com/posts/best-football-boots-for-wet-conditions",
       "clicks": 0.0,
-      "impressions": 31.0,
+      "impressions": 34.0,
       "ctr": 0.0,
-      "position": 25.68,
+      "position": 21.09,
       "opportunity": "quick_win",
-      "score": 68.2,
+      "score": 74.8,
       "local_article": true
     },
     {
       "page": "https://footballtraininglab.com/posts/best-speed-exercises-for-football-players",
       "clicks": 0.0,
-      "impressions": 25.0,
+      "impressions": 29.0,
       "ctr": 0.0,
-      "position": 35.84,
+      "position": 35.79,
       "opportunity": "rising_visibility",
-      "score": 55.0,
+      "score": 63.8,
+      "local_article": true
+    },
+    {
+      "page": "https://footballtraininglab.com/posts/football-training-drills.html",
+      "clicks": 0.0,
+      "impressions": 31.0,
+      "ctr": 0.0,
+      "position": 45.9,
+      "opportunity": "rising_visibility",
+      "score": 42.625,
       "local_article": true
     },
     {
@@ -133,11 +176,11 @@
     {
       "page": "https://footballtraininglab.com/posts/best-football-water-bottle",
       "clicks": 0.0,
-      "impressions": 6.0,
+      "impressions": 10.0,
       "ctr": 0.0,
-      "position": 24.0,
-      "opportunity": "rising_visibility",
-      "score": 13.2,
+      "position": 24.5,
+      "opportunity": "quick_win",
+      "score": 22.0,
       "local_article": true
     },
     {
@@ -163,43 +206,63 @@
   ],
   "all_page_summaries": [
     {
-      "page": "https://footballtraininglab.com/posts/best-football-boots-for-wet-conditions",
+      "page": "https://footballtraininglab.com/posts/leg-workout-for-football.html",
       "clicks": 0.0,
-      "impressions": 28.0,
+      "impressions": 56.0,
       "ctr": 0.0,
-      "position": 18.71,
-      "opportunity": "quick_win",
-      "score": 80.5,
+      "position": 66.73,
+      "opportunity": "observe",
+      "score": 77.0,
       "local_article": true
     },
     {
       "page": "https://footballtraininglab.com/posts/football-boots-for-ankle-support",
       "clicks": 0.0,
-      "impressions": 31.0,
+      "impressions": 35.0,
       "ctr": 0.0,
-      "position": 25.68,
+      "position": 25.43,
       "opportunity": "quick_win",
-      "score": 68.2,
+      "score": 77.0,
+      "local_article": true
+    },
+    {
+      "page": "https://footballtraininglab.com/posts/best-football-boots-for-wet-conditions",
+      "clicks": 0.0,
+      "impressions": 34.0,
+      "ctr": 0.0,
+      "position": 21.09,
+      "opportunity": "quick_win",
+      "score": 74.8,
+      "local_article": true
+    },
+    {
+      "page": "https://footballtraininglab.com/posts/football-conditioning-workout.html",
+      "clicks": 0.0,
+      "impressions": 49.0,
+      "ctr": 0.0,
+      "position": 64.29,
+      "opportunity": "observe",
+      "score": 67.375,
       "local_article": true
     },
     {
       "page": "https://footballtraininglab.com/posts/best-speed-exercises-for-football-players",
       "clicks": 0.0,
-      "impressions": 25.0,
+      "impressions": 29.0,
       "ctr": 0.0,
-      "position": 35.84,
+      "position": 35.79,
       "opportunity": "rising_visibility",
-      "score": 55.0,
+      "score": 63.8,
       "local_article": true
     },
     {
-      "page": "https://footballtraininglab.com/posts/leg-workout-for-football.html",
+      "page": "https://footballtraininglab.com/posts/football-training-drills.html",
       "clicks": 0.0,
-      "impressions": 35.0,
+      "impressions": 31.0,
       "ctr": 0.0,
-      "position": 61.89,
-      "opportunity": "observe",
-      "score": 48.125,
+      "position": 45.9,
+      "opportunity": "rising_visibility",
+      "score": 42.625,
       "local_article": true
     },
     {
@@ -225,11 +288,21 @@
     {
       "page": "https://footballtraininglab.com/posts/best-football-water-bottle",
       "clicks": 0.0,
-      "impressions": 6.0,
+      "impressions": 10.0,
       "ctr": 0.0,
-      "position": 24.0,
-      "opportunity": "rising_visibility",
-      "score": 13.2,
+      "position": 24.5,
+      "opportunity": "quick_win",
+      "score": 22.0,
+      "local_article": true
+    },
+    {
+      "page": "https://footballtraininglab.com/posts/protein-for-footballers",
+      "clicks": 0.0,
+      "impressions": 7.0,
+      "ctr": 0.0,
+      "position": 80.57,
+      "opportunity": "observe",
+      "score": 9.625,
       "local_article": true
     },
     {
@@ -253,16 +326,6 @@
       "local_article": true
     },
     {
-      "page": "https://footballtraininglab.com/posts/football-conditioning-workout.html",
-      "clicks": 0.0,
-      "impressions": 6.0,
-      "ctr": 0.0,
-      "position": 69.33,
-      "opportunity": "observe",
-      "score": 8.25,
-      "local_article": true
-    },
-    {
       "page": "https://footballtraininglab.com/posts/football-stretching-routine-for-footballers.html",
       "clicks": 0.0,
       "impressions": 6.0,
@@ -270,6 +333,46 @@
       "position": 43.5,
       "opportunity": "rising_visibility",
       "score": 8.25,
+      "local_article": true
+    },
+    {
+      "page": "https://footballtraininglab.com/posts/protein-for-footballers.html",
+      "clicks": 0.0,
+      "impressions": 5.0,
+      "ctr": 0.0,
+      "position": 80.8,
+      "opportunity": "observe",
+      "score": 6.875,
+      "local_article": true
+    },
+    {
+      "page": "https://footballtraininglab.com/posts/best-resistance-bands-for-football",
+      "clicks": 0.0,
+      "impressions": 3.0,
+      "ctr": 0.0,
+      "position": 34.0,
+      "opportunity": "observe",
+      "score": 6.6,
+      "local_article": true
+    },
+    {
+      "page": "https://footballtraininglab.com/posts/cheap-football-equipment",
+      "clicks": 0.0,
+      "impressions": 3.0,
+      "ctr": 0.0,
+      "position": 39.0,
+      "opportunity": "observe",
+      "score": 6.6,
+      "local_article": true
+    },
+    {
+      "page": "https://footballtraininglab.com/posts/football-sprint-training-explained",
+      "clicks": 0.0,
+      "impressions": 3.0,
+      "ctr": 0.0,
+      "position": 30.67,
+      "opportunity": "observe",
+      "score": 6.6,
       "local_article": true
     },
     {
@@ -283,21 +386,31 @@
       "local_article": true
     },
     {
-      "page": "https://footballtraininglab.com/posts/protein-for-footballers",
+      "page": "https://footballtraininglab.com/posts/best-football-boots",
       "clicks": 0.0,
       "impressions": 4.0,
       "ctr": 0.0,
-      "position": 79.75,
+      "position": 41.5,
       "opportunity": "observe",
       "score": 5.5,
       "local_article": true
     },
     {
-      "page": "https://footballtraininglab.com/posts/best-resistance-bands-for-football",
+      "page": "https://footballtraininglab.com/posts/best-football-boots-for-artificial-grass",
       "clicks": 0.0,
       "impressions": 2.0,
       "ctr": 0.0,
-      "position": 35.0,
+      "position": 24.0,
+      "opportunity": "observe",
+      "score": 4.4,
+      "local_article": true
+    },
+    {
+      "page": "https://footballtraininglab.com/posts/football-recovery-supplements",
+      "clicks": 0.0,
+      "impressions": 2.0,
+      "ctr": 0.0,
+      "position": 33.5,
       "opportunity": "observe",
       "score": 4.4,
       "local_article": true
@@ -323,11 +436,31 @@
       "local_article": true
     },
     {
+      "page": "https://footballtraininglab.com/posts/best-football-boots-for-midfielders",
+      "clicks": 0.0,
+      "impressions": 2.0,
+      "ctr": 0.0,
+      "position": 61.0,
+      "opportunity": "observe",
+      "score": 2.75,
+      "local_article": true
+    },
+    {
       "page": "https://footballtraininglab.com/posts/best-football-socks-for-blisters",
       "clicks": 0.0,
       "impressions": 2.0,
       "ctr": 0.0,
       "position": 67.0,
+      "opportunity": "observe",
+      "score": 2.75,
+      "local_article": true
+    },
+    {
+      "page": "https://footballtraininglab.com/posts/cheap-football-equipment.html",
+      "clicks": 0.0,
+      "impressions": 2.0,
+      "ctr": 0.0,
+      "position": 56.0,
       "opportunity": "observe",
       "score": 2.75,
       "local_article": true
@@ -343,16 +476,6 @@
       "local_article": true
     },
     {
-      "page": "https://footballtraininglab.com/posts/football-recovery-supplements",
-      "clicks": 0.0,
-      "impressions": 1.0,
-      "ctr": 0.0,
-      "position": 39.0,
-      "opportunity": "observe",
-      "score": 2.2,
-      "local_article": true
-    },
-    {
       "page": "https://footballtraininglab.com/posts/speed-training-for-defenders.html",
       "clicks": 0.0,
       "impressions": 1.0,
@@ -360,16 +483,6 @@
       "position": 21.0,
       "opportunity": "observe",
       "score": 2.2,
-      "local_article": true
-    },
-    {
-      "page": "https://footballtraininglab.com/posts/best-football-boots-for-midfielders",
-      "clicks": 0.0,
-      "impressions": 1.0,
-      "ctr": 0.0,
-      "position": 62.0,
-      "opportunity": "observe",
-      "score": 1.375,
       "local_article": true
     },
     {
@@ -388,6 +501,16 @@
       "impressions": 1.0,
       "ctr": 0.0,
       "position": 88.0,
+      "opportunity": "observe",
+      "score": 1.375,
+      "local_article": true
+    },
+    {
+      "page": "https://footballtraininglab.com/posts/plyometrics-football.html",
+      "clicks": 0.0,
+      "impressions": 1.0,
+      "ctr": 0.0,
+      "position": 51.0,
       "opportunity": "observe",
       "score": 1.375,
       "local_article": true
