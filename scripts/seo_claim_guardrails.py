@@ -35,14 +35,24 @@ def sanitize_text(value: str) -> tuple[str, int]:
     return changed, replacements
 
 
-def changed_post_files() -> list[Path]:
+def load_history() -> list[dict]:
+    if not HISTORY_PATH.exists():
+        return []
+    try:
+        data = json.loads(HISTORY_PATH.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return []
+    return data if isinstance(data, list) else []
+
+
+def current_changed_post_files() -> set[Path]:
     result = subprocess.run(
         ["git", "status", "--porcelain", "--", "posts"],
         check=True,
         capture_output=True,
         text=True,
     )
-    paths: list[Path] = []
+    paths: set[Path] = set()
     for raw_line in result.stdout.splitlines():
         line = raw_line.rstrip()
         if len(line) < 4:
@@ -52,20 +62,25 @@ def changed_post_files() -> list[Path]:
             path_text = path_text.split(" -> ", 1)[1]
         path = Path(path_text)
         if path.suffix.lower() == ".html" and path.exists():
-            paths.append(path)
-    return sorted(set(paths))
+            paths.add(path)
+    return paths
 
 
-def sanitize_history() -> int:
-    if not HISTORY_PATH.exists():
-        return 0
-    try:
-        history = json.loads(HISTORY_PATH.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return 0
-    if not isinstance(history, list):
-        return 0
+def optimized_history_files(history: list[dict]) -> set[Path]:
+    paths: set[Path] = set()
+    for item in history:
+        if not isinstance(item, dict) or item.get("status") != "applied":
+            continue
+        path_text = str(item.get("file", "")).strip()
+        if not path_text:
+            continue
+        path = Path(path_text)
+        if path.suffix.lower() == ".html" and path.exists():
+            paths.add(path)
+    return paths
 
+
+def sanitize_history(history: list[dict]) -> int:
     replacements = 0
     for item in history:
         if not isinstance(item, dict):
@@ -88,11 +103,12 @@ def sanitize_history() -> int:
 
 
 def main() -> int:
-    files = changed_post_files()
+    history = load_history()
+    files = current_changed_post_files() | optimized_history_files(history)
     total_replacements = 0
     changed_files = 0
 
-    for path in files:
+    for path in sorted(files):
         original = path.read_text(encoding="utf-8")
         cleaned, count = sanitize_text(original)
         if not count:
@@ -102,7 +118,7 @@ def main() -> int:
         changed_files += 1
         print(f"SEO claim guardrail sanitized: {path} | replacements={count}")
 
-    history_replacements = sanitize_history()
+    history_replacements = sanitize_history(history)
     total_replacements += history_replacements
 
     if total_replacements == 0:
