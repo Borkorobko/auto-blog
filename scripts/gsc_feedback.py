@@ -206,6 +206,7 @@ def write_outputs(raw: dict, query_rows: list[dict], page_rows: list[dict], star
         "actionable_query_count": len(actionable_queries),
         "actionable_page_count": len(actionable_pages),
         "top_query_opportunities": actionable_queries[:50],
+        "all_query_summaries": query_rows[:500],
         "top_page_opportunities": actionable_pages[:25],
         "all_page_summaries": page_rows[:250],
     }
