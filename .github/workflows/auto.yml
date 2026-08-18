@@ -78,6 +78,9 @@ jobs:
       - name: Apply SEO claim guardrails
         run: python scripts/seo_claim_guardrails.py
 
+      - name: Apply editorial transparency
+        run: python scripts/editorial_transparency.py
+
       - name: Apply AdSense integration
         run: python scripts/inject_adsense.py
 
