@@ -75,7 +75,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python scripts/gsc_seo_optimizer.py
 
-      - name: Apply SEO claim guardrails
+      - name: Apply evidence and claim guardrails
         run: python scripts/seo_claim_guardrails.py
 
       - name: Apply editorial transparency
