@@ -36,5 +36,24 @@
     "new_description": "Comprehensive guide on football boots with ankle support, covering features, types, fitting tips, lacing methods, and FAQs for amateur players.",
     "quick_answer_action": "inserted_new_section",
     "reason": "The original title already aligns well with the target query, so a minor wording enhancement was made to clarify the focus on choosing the right fit. The description was optimized to better summarize key article contents within character limits. The quick answer directly addresses the query using existing article information about boot types, features, and selection advice, improving relevance for search. This conservative update respects the original article's topic and structure while targeting the SEO signal."
+  },
+  {
+    "date": "2026-08-19",
+    "status": "applied",
+    "page": "https://footballtraininglab.com/posts/best-speed-exercises-for-football-players",
+    "file": "posts/best-speed-exercises-for-football-players.html",
+    "target_query": "speed drills for football",
+    "query_impressions": 10.0,
+    "query_clicks": 0.0,
+    "query_ctr": 0.0,
+    "query_position": 27.7,
+    "page_impressions": 35.0,
+    "page_position": 35.14,
+    "old_title": "Best Speed Exercises for Football Players",
+    "new_title": "Best Speed Drills and Exercises for Football Players",
+    "old_description": "Learn about Best Speed Exercises for Football Players with practical football training advice, common mistakes, useful tips and answers for amateur players",
+    "new_description": "Discover effective speed drills and exercises for football players with practical tips, common mistakes to avoid, and training routines for amateurs.",
+    "quick_answer_action": "inserted_new_section",
+    "reason": "The revised title incorporates the target query phrase 'speed drills for football' for better SEO relevance while maintaining the original article’s focus on speed exercises. The updated description succinctly summarizes what the article offers, highlighting drills and advice for amateur players. The quick answer directly responds to the search intent using only information from the existing article without changing meaning or structure."
   }
 ]
