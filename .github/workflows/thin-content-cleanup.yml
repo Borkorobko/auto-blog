@@ -1,0 +1,36 @@
+name: One-time AdSense thin-content cleanup
+
+on:
+  push:
+    branches:
+      - adsense-thin-content-cleanup
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout cleanup branch
+        uses: actions/checkout@v4
+        with:
+          ref: adsense-thin-content-cleanup
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Audit and noindex clearly thin articles
+        run: python scripts/adsense_thin_content_cleanup.py
+
+      - name: Commit audit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "Noindex clearly thin articles for AdSense quality" || echo "No thin-content changes to commit"
+          git push origin HEAD:adsense-thin-content-cleanup
