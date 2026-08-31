@@ -73,4 +73,4 @@ Pages below 650 visible article words are temporarily noindexed and excluded fro
 | `best-football-boots-for-wet-conditions.html` | 1644 | index |
 
 Indexable article count after thin-content gate: 64
-Newly noindexed thin pages: 3
+Newly noindexed thin pages: 0
