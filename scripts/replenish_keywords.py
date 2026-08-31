@@ -101,7 +101,9 @@ def too_similar(candidate: str, existing: list[str]) -> bool:
         if not union:
             continue
         jaccard = len(c_tokens & i_tokens) / len(union)
-        if jaccard >= 0.82:
+        # Conservative intent-overlap gate: prefer fewer distinct guides over
+        # many near-paraphrases that compete with each other in Search/AdSense.
+        if jaccard >= 0.58:
             return True
     return False
 
