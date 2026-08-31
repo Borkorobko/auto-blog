@@ -1,7 +1,7 @@
 name: Auto Football Site
 
 # AdSense quality cleanup: manual runs only while the content library is consolidated.
-# Re-enable the schedule after the duplicate-intent cleanup and quality review.
+# Re-enable the schedule only after the cleaned site has been recrawled and reviewed.
 on:
   workflow_dispatch:
 
@@ -80,6 +80,11 @@ jobs:
 
       - name: Apply editorial transparency
         run: python scripts/editorial_transparency.py
+
+      - name: Apply persistent AdSense quality gates
+        run: |
+          python scripts/adsense_quality_cleanup.py
+          python scripts/adsense_thin_content_cleanup.py
 
       - name: Apply AdSense integration
         run: python scripts/inject_adsense.py
