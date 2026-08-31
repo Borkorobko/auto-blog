@@ -1,9 +1,9 @@
 name: Auto Football Site
 
+# AdSense quality cleanup: manual runs only while the content library is consolidated.
+# Re-enable the schedule after the duplicate-intent cleanup and quality review.
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 10 * * 1,3,5"
 
 permissions:
   contents: write
