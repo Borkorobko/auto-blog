@@ -1,43 +1,35 @@
-# AdSense low-value-content audit — pass 2
+# AdSense low-value-content audit — pass 3
 
 This pass follows the September 2026 AdSense rejection for **Low value content**.
 
-## What was already in place
+## Completed in this pass
 
-- scheduled article generation is paused;
-- overlapping speed/training articles are consolidated;
-- very thin articles are noindexed;
-- the active library is rebuilt to exclude noindex pages.
+- Rebuilt `best-football-boots.html` into a broader pillar guide covering surface, fit, position, budget, materials and a practical buying checklist.
+- Consolidated four overlapping commercial pages into that pillar:
+  - `best-football-boots-under-100.html`
+  - `best-football-boots-for-beginners.html`
+  - `best-football-boots-for-defenders.html`
+  - `best-football-boots-for-midfielders.html`
+- Rewrote `best-football-boots-for-artificial-grass.html` as a distinct AG/MG/FG surface guide and returned it to the article library and sitemap.
+- Rewrote `best-football-goalkeeper-gloves.html` around cut, grip, fit, durability, training use and care, then returned it to the article library and sitemap.
+- Kept scheduled new-article generation paused.
 
-## Rewrite queue
+## Why these consolidations were chosen
 
-The pages below have strong buying intent in the title but currently answer it mostly with generic selection advice rather than concrete, differentiated recommendations. They are temporarily set to `noindex, follow` and removed from the article library and sitemap until rewritten.
+The four retired boot pages repeated broad fit, surface and material advice without enough unique value to justify separate URLs. Their useful intent is now covered inside the stronger football-boots pillar.
 
-| Page | Main issue | Required before reindexing |
-| --- | --- | --- |
-| `best-football-boots-under-100.html` | "Best" + price intent, but no concrete picks/comparison | clear picks or product tiers, comparison table, budget caveat, distinct trade-offs |
-| `best-football-boots-for-beginners.html` | generic beginner buying advice | beginner-specific shortlist/types, comparison, fit/surface decision tree |
-| `best-football-boots-for-defenders.html` | position intent not answered with differentiated picks | defender-specific use cases, trade-offs, comparison |
-| `best-football-boots-for-midfielders.html` | position intent not answered with differentiated picks | midfielder-specific use cases, trade-offs, comparison |
-| `best-football-boots-for-artificial-grass.html` | broad generic guide with weak AG-specific depth | AG-specific soleplate guidance, comparison, surface/care detail |
-| `best-football-goalkeeper-gloves.html` | "Best" intent without concrete glove recommendations | cut/latex/use-case comparison, durability vs grip trade-offs, shortlist/types |
-
-## Keep / stronger examples
-
-These pages currently show a better structure and should be used as the rewrite benchmark rather than creating more articles:
-
-- `best-football-boots-for-wet-conditions.html` — has a Quick Picks section and comparison table.
-- `best-football-boots-for-speed.html` — has a comparison table and more specific model/context references.
-- `speed-training-for-football.html` — consolidated pillar guide replacing multiple overlapping speed pages.
+The artificial-grass and goalkeeper-glove topics remain separate because they have clearly different user needs and can support genuinely distinct practical guidance.
 
 ## Reindex rule
 
-A page in the rewrite queue should not return to the sitemap/library until it:
+A page should remain indexable only when it:
 
 1. answers the exact search intent near the top;
-2. contains clearly differentiated practical recommendations, not just generic advice;
-3. includes a useful comparison/table when the query is commercial;
+2. contains differentiated practical guidance rather than generic filler;
+3. includes useful comparisons or decision frameworks when appropriate;
 4. avoids invented testing, prices, endorsements or availability;
 5. has distinct value that is not already covered by another FTL page.
 
-New-article generation stays paused during this cleanup.
+## Next review
+
+The next cleanup pass should inspect the remaining equipment and supplement-style pages for the same failure pattern before another AdSense review is requested.
