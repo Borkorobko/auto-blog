@@ -34,6 +34,10 @@ REDIRECTS = {
     "football-recovery-workout": "football-recovery-routine-after-a-match",
     "how-to-get-stronger-for-football": "strength-training-for-football",
     "best-boots-for-speed": "best-football-boots-for-speed",
+    "best-football-boots-under-100": "best-football-boots",
+    "best-football-boots-for-beginners": "best-football-boots",
+    "best-football-boots-for-defenders": "best-football-boots",
+    "best-football-boots-for-midfielders": "best-football-boots",
     "foootball-news": "index",
 }
 
