@@ -45,6 +45,20 @@ These pages were consolidated during the AdSense low-value-content cleanup.
 
 - `football-recovery-supplements` → `football-recovery-routine-after-a-match`
 
+- `football-conditioning-workout` → `football-fitness-training`
+
+- `football-endurance-training` → `football-fitness-training`
+
+- `football-workout` → `football-fitness-training`
+
+- `speed-training-for-defenders` → `speed-training-for-football`
+
+- `speed-training-for-strikers` → `speed-training-for-football`
+
+- `speed-training-for-wingers` → `speed-training-for-football`
+
+- `sprint-mechanics-for-football-players` → `proper-sprinting-technique-for-football`
+
 GitHub Pages does not provide server-side 301 rules for this deployment, so source pages use `noindex`, a canonical target, and an immediate browser redirect. They are excluded from the article library and sitemap.
 
 Scheduled new-article generation is intentionally paused until the consolidated library has been reviewed and Search Console/AdSense signals improve.

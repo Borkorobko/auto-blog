@@ -42,3 +42,13 @@ A page should remain indexable only when it:
 ## Next review
 
 The next cleanup pass should inspect the remaining equipment and supplement-style pages for the same failure pattern before another AdSense review is requested.
+
+
+## Final quality pass
+
+- Rebuilt `football-fitness-training.html` as the main fitness pillar covering aerobic endurance, repeated-sprint conditioning, strength support and weekly load planning.
+- Consolidated `football-conditioning-workout.html`, `football-endurance-training.html` and `football-workout.html` into the fitness pillar.
+- Expanded `speed-training-for-football.html` with position-specific speed priorities and consolidated separate defender, striker and winger speed pages into it.
+- Consolidated `sprint-mechanics-for-football-players.html` into `proper-sprinting-technique-for-football.html`.
+- Reclassified `football-speed-drills-without-equipment.html` from Equipment to Speed & Training.
+- Reworked misleading “best” titles on equipment pages so the title matches what the page actually provides: buying guidance, type comparisons and use cases rather than unsupported product rankings.
