@@ -34,6 +34,16 @@ REDIRECTS = {
     "football-recovery-workout": "football-recovery-routine-after-a-match",
     "how-to-get-stronger-for-football": "strength-training-for-football",
     "best-boots-for-speed": "best-football-boots-for-speed",
+    "best-football-boots-under-100": "best-football-boots",
+    "best-football-boots-for-beginners": "best-football-boots",
+    "best-football-boots-for-defenders": "best-football-boots",
+    "best-football-boots-for-midfielders": "best-football-boots",
+    "how-to-choose-football-boots": "best-football-boots",
+    "best-football-boots-for-wide-feet": "best-football-boots",
+    "football-boots-for-ankle-support": "best-football-boots",
+    "best-football-water-bottle": "football-hydration-tips",
+    "best-protein-powder-for-football-players": "protein-for-footballers",
+    "football-recovery-supplements": "football-recovery-routine-after-a-match",
     "foootball-news": "index",
 }
 

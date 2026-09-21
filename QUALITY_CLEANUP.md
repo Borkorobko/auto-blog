@@ -25,6 +25,26 @@ These pages were consolidated during the AdSense low-value-content cleanup.
 - `best-boots-for-speed` → `best-football-boots-for-speed`
 - `foootball-news` → `index`
 
+- `best-football-boots-under-100` → `best-football-boots`
+
+- `best-football-boots-for-beginners` → `best-football-boots`
+
+- `best-football-boots-for-defenders` → `best-football-boots`
+
+- `best-football-boots-for-midfielders` → `best-football-boots`
+
+- `how-to-choose-football-boots` → `best-football-boots`
+
+- `best-football-boots-for-wide-feet` → `best-football-boots`
+
+- `football-boots-for-ankle-support` → `best-football-boots`
+
+- `best-football-water-bottle` → `football-hydration-tips`
+
+- `best-protein-powder-for-football-players` → `protein-for-footballers`
+
+- `football-recovery-supplements` → `football-recovery-routine-after-a-match`
+
 GitHub Pages does not provide server-side 301 rules for this deployment, so source pages use `noindex`, a canonical target, and an immediate browser redirect. They are excluded from the article library and sitemap.
 
 Scheduled new-article generation is intentionally paused until the consolidated library has been reviewed and Search Console/AdSense signals improve.
