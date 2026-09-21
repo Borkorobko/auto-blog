@@ -38,6 +38,9 @@ REDIRECTS = {
     "best-football-boots-for-beginners": "best-football-boots",
     "best-football-boots-for-defenders": "best-football-boots",
     "best-football-boots-for-midfielders": "best-football-boots",
+    "how-to-choose-football-boots": "best-football-boots",
+    "best-football-boots-for-wide-feet": "best-football-boots",
+    "football-boots-for-ankle-support": "best-football-boots",
     "foootball-news": "index",
 }
 
