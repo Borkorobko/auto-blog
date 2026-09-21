@@ -30,6 +30,15 @@ A page should remain indexable only when it:
 4. avoids invented testing, prices, endorsements or availability;
 5. has distinct value that is not already covered by another FTL page.
 
+
+## Additional cleanup in this pass
+
+- Consolidated `how-to-choose-football-boots.html`, `best-football-boots-for-wide-feet.html` and `football-boots-for-ankle-support.html` into the stronger football-boots pillar.
+- Consolidated `best-football-water-bottle.html` into `football-hydration-tips.html`.
+- Consolidated `best-protein-powder-for-football-players.html` into `protein-for-footballers.html`.
+- Consolidated `football-recovery-supplements.html` into `football-recovery-routine-after-a-match.html`.
+- Rewrote `best-shin-guards-for-football.html` to remove irrelevant fitness-plan filler and focus on sizing, fit, styles, coverage, care and a practical buying checklist.
+
 ## Next review
 
 The next cleanup pass should inspect the remaining equipment and supplement-style pages for the same failure pattern before another AdSense review is requested.
