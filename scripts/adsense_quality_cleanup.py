@@ -41,6 +41,9 @@ REDIRECTS = {
     "how-to-choose-football-boots": "best-football-boots",
     "best-football-boots-for-wide-feet": "best-football-boots",
     "football-boots-for-ankle-support": "best-football-boots",
+    "best-football-water-bottle": "football-hydration-tips",
+    "best-protein-powder-for-football-players": "protein-for-footballers",
+    "football-recovery-supplements": "football-recovery-routine-after-a-match",
     "foootball-news": "index",
 }
 
